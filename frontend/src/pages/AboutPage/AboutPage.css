@@ -21,7 +21,7 @@
     padding: 0 10vw;
     position: relative;
     scroll-snap-align: start;
-    overflow: hidden;
+    overflow-y: auto;
     background: #000;
 }
 

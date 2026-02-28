@@ -11,7 +11,7 @@
     padding: 5vw 10vw;
     position: relative;
     scroll-snap-align: start;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .footer-glow {

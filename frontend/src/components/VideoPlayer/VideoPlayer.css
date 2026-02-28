@@ -3,7 +3,7 @@
     width: 100%;
     background: #000;
     border-radius: 1rem;
-    overflow: hidden;
+    overflow-y: auto;
     aspect-ratio: 16 / 9;
 }
 
@@ -112,7 +112,7 @@
     align-items: center;
     gap: 0.5rem;
     width: 0;
-    overflow: hidden;
+    overflow-y: auto;
     transition: width 0.3s ease;
 }
 

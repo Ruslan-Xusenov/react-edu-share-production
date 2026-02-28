@@ -60,7 +60,7 @@
     color: #fff;
     box-shadow: 0 0 100px rgba(0, 242, 254, 0.1);
     border: 1px solid var(--border);
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .certificate-paper::before {

@@ -36,7 +36,7 @@
 
 .learning-card {
     border-radius: var(--radius-xl);
-    overflow: hidden;
+    overflow-y: auto;
     transition: all var(--transition-base);
 }
 
@@ -99,7 +99,7 @@
     background: var(--gray-100);
     border-radius: var(--radius-full);
     margin-bottom: 1.5rem;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .progress-fill {

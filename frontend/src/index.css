@@ -174,7 +174,7 @@ h2 {
   font-size: 0.75rem;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .btn-primary {

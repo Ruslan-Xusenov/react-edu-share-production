@@ -19,7 +19,7 @@
     padding: 0 10vw;
     position: relative;
     scroll-snap-align: start;
-    overflow: hidden;
+    overflow-y: auto;
     background: radial-gradient(circle at center, #0a0a1a 0%, #030308 100%);
 }
 
@@ -165,7 +165,7 @@
     backdrop-filter: blur(30px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 32px;
-    overflow: hidden;
+    overflow-y: auto;
     transition: all 0.7s var(--transition);
     position: relative;
     cursor: pointer;
@@ -181,7 +181,7 @@
 .course-image-wrapper {
     aspect-ratio: 21/9;
     background: #050505;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .course-image {
