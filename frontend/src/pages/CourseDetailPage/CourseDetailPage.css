@@ -520,32 +520,37 @@
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .course-watch-container {
         grid-template-columns: 1fr;
         padding: 1rem;
-        gap: 2rem;
+        gap: 2.5rem;
     }
 
     .watch-sidebar {
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 2rem;
+        width: 100%;
+        max-width: 100%;
     }
 
     .enroll-card {
         width: 100%;
+        max-width: 100%;
         position: static;
-        order: -1;
+        order: 2;
+        /* After main content wrapper */
     }
 
     .related-lessons {
         width: 100%;
+        order: 3;
     }
 
     .watch-meta-row {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: 1.2rem;
     }
 }
 
