@@ -360,8 +360,8 @@
         scroll-snap-type: x mandatory;
         gap: 1.2rem;
         padding: 1rem 5vw 2.5rem !important;
-        width: 100vw;
-        margin-left: -5vw;
+        width: 100%;
+        margin-left: 0;
         scrollbar-width: none;
         -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;

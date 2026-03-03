@@ -171,13 +171,21 @@ const VideoPlayer = ({ src, poster, onProgress, initialTime = 0 }) => {
         >
             <video
                 ref={videoRef}
-                src={src}
                 poster={poster}
                 onClick={togglePlay}
                 preload="auto"
                 playsInline
                 tabIndex="-1"
-            />
+                crossOrigin="anonymous"
+            >
+                {src && (
+                    <source
+                        src={src}
+                        type={src.endsWith('.webm') ? 'video/webm' : 'video/mp4'}
+                    />
+                )}
+                Brauzeringiz ushbu videoni qo'llab-quvvatlamaydi.
+            </video>
 
             {videoError && (
                 <div className="video-error-overlay">
