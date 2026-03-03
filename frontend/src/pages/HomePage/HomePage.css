@@ -7,6 +7,15 @@
     height: 100vh;
 }
 
+@media (max-width: 1024px) {
+    .homepage-horizontal {
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+        overflow-x: hidden;
+    }
+}
+
 .hero-section,
 .stats-section,
 .categories-section,
@@ -232,7 +241,9 @@
 @media (max-width: 1024px) {
     .homepage-horizontal {
         flex-direction: column;
+        width: 100%;
         height: auto;
+        overflow-x: hidden;
     }
 
     .hero-section,
@@ -243,9 +254,10 @@
         width: 100%;
         height: auto;
         min-height: 100vh;
-        flex-shrink: unset;
+        flex-shrink: 0;
+        /* Changed from unset for better flex behavior */
         scroll-snap-align: none;
-        padding: 6rem 6vw 4rem;
+        padding: 8rem 6vw 6rem;
     }
 
     .hero-section {
@@ -346,12 +358,13 @@
         flex-direction: row !important;
         overflow-x: auto !important;
         scroll-snap-type: x mandatory;
-        gap: 1.5rem;
-        padding: 1.5rem 5vw !important;
-        width: 100%;
+        gap: 1.2rem;
+        padding: 1rem 5vw 2.5rem !important;
+        width: 100vw;
         margin-left: -5vw;
         scrollbar-width: none;
         -ms-overflow-style: none;
+        -webkit-overflow-scrolling: touch;
     }
 
     .categories-grid::-webkit-scrollbar,
@@ -414,9 +427,14 @@
     .category-card {
         width: 75vw !important;
         height: 240px;
+        padding: 1.5rem;
     }
 
     .course-card {
-        width: 75vw !important;
+        width: 80vw !important;
+    }
+
+    .stat-number {
+        font-size: 3.5rem;
     }
 }

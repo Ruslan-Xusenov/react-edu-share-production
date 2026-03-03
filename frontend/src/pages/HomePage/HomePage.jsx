@@ -78,6 +78,7 @@ const HomePage = () => {
                 <div className="hero-orb hero-orb-2"></div>
                 <div className="hero-content">
                     <motion.h1
+                        className="hero-title"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
