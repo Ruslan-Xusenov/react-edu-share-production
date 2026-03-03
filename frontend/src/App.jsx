@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Navbar from './components/Navbar/Navbar';
@@ -20,6 +20,9 @@ import SplashScreen from './components/SplashScreen/SplashScreen';
 import AIChatBot from './components/AIChatBot/AIChatBot';
 import './App.css';
 
+// Pages that use horizontal scroll (desktop)
+const HORIZONTAL_ROUTES = ['/', '/about', '/leaderboard'];
+
 // ScrollReset component — scroll to top on navigation
 function ScrollReset() {
   const { pathname } = useLocation();
@@ -27,7 +30,7 @@ function ScrollReset() {
   useEffect(() => {
     const container = document.querySelector('.main-content');
     if (container) {
-      container.scrollTo({ top: 0, behavior: 'instant' });
+      container.scrollTo({ left: 0, top: 0, behavior: 'instant' });
     }
     window.scrollTo(0, 0);
   }, [pathname]);
@@ -69,7 +72,7 @@ const PageWrapper = ({ children }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-    style={{ width: '100%' }}
+    style={{ width: '100%', flexShrink: 0 }}
   >
     {children}
   </motion.div>
@@ -79,6 +82,11 @@ function App() {
   const [showSplash, setShowSplash] = useState(true);
   const handleSplashComplete = useCallback(() => setShowSplash(false), []);
   const location = useLocation();
+
+  // Determine if current route uses horizontal scroll
+  const isHorizontalRoute = useMemo(() => {
+    return HORIZONTAL_ROUTES.includes(location.pathname);
+  }, [location.pathname]);
 
   // Custom cursor
   useEffect(() => {
@@ -98,21 +106,44 @@ function App() {
     return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
-  // Vertical scroll progress bar
+  // Horizontal scroll progress bar + wheel → horizontal scroll (only for horizontal routes)
   useEffect(() => {
+    const container = document.querySelector('.main-content');
+    if (!container) return;
+
     const handleScroll = () => {
-      const container = document.querySelector('.main-content');
       const progress = document.querySelector('.scroll-progress');
-      if (container && progress) {
-        const scrollPercent = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
-        progress.style.width = (scrollPercent || 0) + '%';
+      if (progress) {
+        if (isHorizontalRoute && window.innerWidth > 1024) {
+          const scrollPercent = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
+          progress.style.width = (scrollPercent || 0) + '%';
+        } else {
+          const scrollPercent = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
+          progress.style.width = (scrollPercent || 0) + '%';
+        }
       }
     };
 
-    const container = document.querySelector('.main-content');
-    container?.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container?.removeEventListener('scroll', handleScroll);
-  }, []);
+    // Convert vertical wheel to horizontal scroll (only for horizontal routes on desktop)
+    const handleWheel = (e) => {
+      if (isHorizontalRoute && window.innerWidth > 1024) {
+        e.preventDefault();
+        container.scrollBy({
+          left: e.deltaY * 2,
+          behavior: 'smooth'
+        });
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [isHorizontalRoute]);
+
+  const scrollModeClass = isHorizontalRoute ? 'horizontal-mode' : 'vertical-mode';
 
   return (
     <HelmetProvider>
@@ -125,7 +156,7 @@ function App() {
         <div className="scroll-progress"></div>
         <Navbar />
         <AIChatBot />
-        <main className="main-content">
+        <main className={`main-content ${scrollModeClass}`}>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<PageWrapper><HomePage /></PageWrapper>} />

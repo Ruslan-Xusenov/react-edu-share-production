@@ -4,12 +4,24 @@
 User-agent: *
 Allow: /
 Allow: /courses
+Allow: /courses/*
 Allow: /about
-Allow: /rankings
+Allow: /leaderboard
 
+# Private/Auth sahifalar
 Disallow: /api/
 Disallow: /admin/
 Disallow: /accounts/
+Disallow: /login
+Disallow: /signup
+Disallow: /profile
+Disallow: /my-learning
+Disallow: /create-lesson
+Disallow: /certificate/
+
+# Static va media fayllar
+Disallow: /static/
+Disallow: /media/
 
 # Sitemap
 Sitemap: https://edushare.uz/sitemap.xml
@@ -17,9 +29,37 @@ Sitemap: https://edushare.uz/sitemap.xml
 # Google Bot
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
+Allow: /courses
+Allow: /courses/*
+Allow: /about
+Allow: /leaderboard
+Disallow: /api/
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /login
+Disallow: /signup
+Disallow: /profile
+Disallow: /my-learning
+Disallow: /create-lesson
 
 # Yandex Bot
 User-agent: YandexBot
 Allow: /
+Allow: /courses
+Allow: /courses/*
+Allow: /about
+Allow: /leaderboard
+Disallow: /api/
+Disallow: /admin/
+Disallow: /accounts/
 Crawl-delay: 2
+
+# Bing Bot
+User-agent: Bingbot
+Allow: /
+Allow: /courses
+Allow: /about
+Allow: /leaderboard
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 1

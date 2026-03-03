@@ -66,8 +66,10 @@ const HomePage = () => {
     return (
         <div className="homepage-horizontal">
             <Helmet>
-                <title>EDUSHARE — FUTURISTIC LEARNING ENGINE</title>
-                <meta name="description" content="AI-driven peer-to-peer education platform." />
+                <title>EduShare School — Bepul Onlayn Ta'lim Platformasi | Ruslan Xusenov</title>
+                <meta name="description" content="EduShare School — O'zbekistondagi bepul onlayn ta'lim platformasi. Dasturlash, matematika, fan, sport va tillar bo'yicha bepul video kurslar. O'quvchilar bir-birlariga o'rgatadi va o'rganadi." />
+                <meta name="keywords" content="EduShare, bepul kurslar, onlayn ta'lim, dasturlash kurslari, matematika, Ruslan Xusenov, bepul ta'lim platformasi" />
+                <link rel="canonical" href="https://edushare.uz/" />
             </Helmet>
 
             {/* HERO SECTION */}
@@ -197,7 +199,7 @@ const HomePage = () => {
             </section>
 
             {/* FOOTER - Final Section */}
-            <section className="horizontal-section" style={{ height: 'auto', minHeight: 'auto', display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+            <section className="cta-section" style={{ justifyContent: 'flex-end', padding: 0 }}>
                 <Footer />
             </section>
         </div>

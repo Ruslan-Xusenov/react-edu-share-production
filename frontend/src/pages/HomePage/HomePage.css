@@ -1,9 +1,10 @@
-/* 🏠 Home Page - Opus.ai Inspired Premium Redesign */
+/* 🏠 Home Page - Opus.ai Inspired Horizontal Scroll */
 
 .homepage-horizontal {
     display: flex;
-    flex-direction: column;
-    width: 100%;
+    flex-direction: row;
+    width: max-content;
+    height: 100vh;
 }
 
 .hero-section,
@@ -11,15 +12,16 @@
 .categories-section,
 .courses-section,
 .cta-section {
-    width: 100%;
-    min-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 10vw;
     position: relative;
     scroll-snap-align: start;
-    overflow-y: auto;
+    overflow: hidden;
     background: radial-gradient(circle at center, #0a0a1a 0%, #030308 100%);
 }
 

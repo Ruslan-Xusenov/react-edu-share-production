@@ -183,8 +183,9 @@ const ProfilePage = () => {
     return (
         <div className="profile-page">
             <Helmet>
-                <title>{user.full_name || 'PROFIL'} — EDUSHARE ENGINE</title>
-                <meta name="description" content="Access your high-fidelity learning modules and performance statistics." />
+                <title>{user.full_name || 'Profil'} — EduShare School</title>
+                <meta name="description" content="EduShare School — profil sahifangiz. Kurslaringiz, sertifikatlaringiz va ball statistikangizni kuzating." />
+                <meta name="robots" content="noindex, nofollow" />
             </Helmet>
 
             {showCompleteProfile && (

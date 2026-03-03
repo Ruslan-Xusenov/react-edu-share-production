@@ -45,9 +45,9 @@ const LoginPage = () => {
     return (
         <>
             <Helmet>
-                <title>Kirish - EduShare School | Ruslan Xusenov</title>
-                <meta name="description" content="EduShare hisobingizga kiring. Kurslar, darslar va tengdoshlaringizdan o'rganishga kirish uchun tizimga kiring. Ruslan Xusenov tomonidan yaratilgan." />
-                <meta name="author" content="Ruslan Xusenov" />
+                <title>Kirish — EduShare School | Hisobingizga Kiring</title>
+                <meta name="description" content="EduShare School hisobingizga kiring. Bepul kurslar, video darslar va sertifikatlarga kirish uchun tizimga kiring." />
+                <meta name="robots" content="noindex, nofollow" />
             </Helmet>
 
             <div className="auth-page">

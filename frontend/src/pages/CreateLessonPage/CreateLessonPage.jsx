@@ -207,9 +207,9 @@ const CreateLessonPage = () => {
     return (
         <>
             <Helmet>
-                <title>Dars Yaratish - EduShare School | Ruslan Xusenov</title>
-                <meta name="description" content="Yangi dars yarating va bilimingizni EduShare platformasidagi tengdoshlarsingiz bilan ulashing. Ruslan Xusenov tomonidan yaratilgan." />
-                <meta name="author" content="Ruslan Xusenov" />
+                <title>Yangi Dars Yaratish — EduShare School</title>
+                <meta name="description" content="EduShare School platformasida yangi dars yarating va bilimingizni boshqalar bilan ulashing." />
+                <meta name="robots" content="noindex, nofollow" />
             </Helmet>
 
             <div className="create-lesson-page">

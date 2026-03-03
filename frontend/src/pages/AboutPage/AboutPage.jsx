@@ -78,7 +78,10 @@ const AboutPage = () => {
     return (
         <div className="about-page">
             <Helmet>
-                <title>MANIFESTO — EDUSHARE ENGINE</title>
+                <title>Biz Haqimizda — EduShare School | Missiya va Jamoa</title>
+                <meta name="description" content="EduShare School — bepul ta'lim platformasi haqida. Bizning missiyamiz, qadriyatlarimiz va jamoamiz. Ruslan Xusenov va Elbek Sharofov tomonidan yaratilgan." />
+                <meta name="keywords" content="EduShare haqida, EduShare missiyasi, Ruslan Xusenov, Elbek Sharofov, bepul ta'lim" />
+                <link rel="canonical" href="https://edushare.uz/about" />
             </Helmet>
 
             <section className="about-hero">

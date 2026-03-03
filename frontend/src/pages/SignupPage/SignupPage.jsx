@@ -64,9 +64,9 @@ const SignupPage = () => {
     return (
         <>
             <Helmet>
-                <title>Ro'yxatdan O'tish - EduShare School | Ruslan Xusenov</title>
-                <meta name="description" content="EduShare School platformasida bepul ro'yxatdan o'ting. Ruslan Xusenov tomonidan yaratilgan O'zbekistonning eng yaxshi ta'lim platformasi." />
-                <meta name="author" content="Ruslan Xusenov" />
+                <title>Ro'yxatdan O'tish — EduShare School | Bepul Hisob Yarating</title>
+                <meta name="description" content="EduShare School platformasida bepul ro'yxatdan o'ting. Bepul video kurslar, darslar va sertifikatlardan foydalaning." />
+                <meta name="robots" content="noindex, nofollow" />
             </Helmet>
 
             <div className="auth-page">

@@ -54,9 +54,9 @@ const MyLearningPage = () => {
     return (
         <div className="my-learning-page">
             <Helmet>
-                <title>O'rganishlarim - EduShare | Ruslan Xusenov</title>
-                <meta name="description" content="EduShare School - o'rganish jarayoningizni kuzating. Ruslan Xusenov tomonidan yaratilgan ta'lim platformasi." />
-                <meta name="author" content="Ruslan Xusenov" />
+                <title>O'rganishlarim — EduShare School</title>
+                <meta name="description" content="EduShare School — o'rganish jarayoningizni kuzating. Yozilgan kurslar va davom etayotgan darslar." />
+                <meta name="robots" content="noindex, nofollow" />
             </Helmet>
 
             <div className="container">

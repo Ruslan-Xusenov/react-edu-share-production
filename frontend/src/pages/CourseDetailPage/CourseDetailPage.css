@@ -35,7 +35,7 @@
 .video-section {
     background: black;
     border-radius: 12px;
-    overflow-y: auto;
+    overflow: hidden;
     margin-bottom: 1rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -44,7 +44,7 @@
     width: 100%;
     aspect-ratio: 16/9;
     position: relative;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .video-player-youtube {
@@ -306,7 +306,7 @@
     position: sticky;
     top: 1rem;
     z-index: 10;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .price-section {
@@ -334,7 +334,7 @@
 
 .btn-shimmer {
     position: relative;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .btn-shimmer::after {
@@ -411,8 +411,7 @@
     width: 120px;
     height: 68px;
     border-radius: 8px;
-    overflow-y: auto;
-
+    overflow: hidden;
 }
 
 .lesson-thumb img {

@@ -515,9 +515,15 @@ const CourseDetailPage = () => {
     return (
         <>
             <Helmet>
-                <title>{course.title || 'Kurs Tafsilotlari'} - EduShare School | Ruslan Xusenov</title>
-                <meta name="description" content={course.description} />
-                <meta name="author" content="Ruslan Xusenov" />
+                <title>{course.title} — Bepul Dars | EduShare School</title>
+                <meta name="description" content={`${course.title} — ${course.description?.substring(0, 150) || 'EduShare School bepul onlayn dars'}. Bepul ko\'ring va sertifikat oling!`} />
+                <meta name="keywords" content={`${course.title}, bepul dars, EduShare, onlayn o'rganish, ${course.category?.display_name || 'ta\'lim'}`} />
+                <link rel="canonical" href={`https://edushare.uz/courses/${course.id}`} />
+                <meta property="og:title" content={`${course.title} — EduShare School`} />
+                <meta property="og:description" content={course.description?.substring(0, 200) || 'EduShare School bepul onlayn dars'} />
+                <meta property="og:image" content={course.thumbnail_url || 'https://edushare.uz/og-image.jpg'} />
+                <meta property="og:url" content={`https://edushare.uz/courses/${course.id}`} />
+                <meta property="og:type" content="article" />
             </Helmet>
 
             <div className="course-detail-page">

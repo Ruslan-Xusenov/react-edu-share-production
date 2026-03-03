@@ -54,7 +54,10 @@ const CoursesPage = () => {
     return (
         <div className="courses-page">
             <Helmet>
-                <title>MODULES — EDUSHARE ENGINE</title>
+                <title>Bepul Kurslar — EduShare School | Dasturlash, Matematika, Fan</title>
+                <meta name="description" content="EduShare School bepul kurslar katalogi. Dasturlash, matematika, fan, sport, musiqa va tillar bo'yicha bepul video darslar. Hozir boshlang!" />
+                <meta name="keywords" content="bepul kurslar, onlayn darslar, dasturlash, matematika, EduShare kurslar" />
+                <link rel="canonical" href="https://edushare.uz/courses" />
             </Helmet>
 
             <section className="courses-exploration-section">

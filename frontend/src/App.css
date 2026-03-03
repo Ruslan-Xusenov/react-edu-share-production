@@ -1,16 +1,56 @@
-/* 🎨 App Layout Styles */
+/* 🎨 App Layout Styles - Smart Scroll System */
 .app {
-  width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-.main-content {
+/* Pages that use horizontal scroll (HomePage) */
+.main-content.horizontal-mode {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Pages that use vertical scroll (all other pages) */
+.main-content.vertical-mode {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.main-content::-webkit-scrollbar {
+  display: none;
+}
+
+.main-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Tablet va telefon uchun — vertikal scrollga qaytarish */
+@media (max-width: 1024px) {
+  .app {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .main-content.horizontal-mode,
+  .main-content.vertical-mode {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: y proximity;
+  }
 }

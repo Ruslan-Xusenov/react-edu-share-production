@@ -225,7 +225,7 @@
 
 .card-thumb {
     aspect-ratio: 16/9;
-    overflow-y: auto;
+    overflow: hidden;
     position: relative;
 }
 
@@ -254,7 +254,7 @@
     gap: 2rem;
     padding: 2.5rem;
     position: relative;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .certificate-card::after {

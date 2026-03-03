@@ -48,31 +48,26 @@
 html,
 body {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   font-family: var(--font-body);
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 #root,
 .app {
-  width: 100%;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-/* ── Vertical Scroll Layout ── */
+/* ── Main Content Base (scroll modes handled in App.css) ── */
 .main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
   background: var(--bg-primary);
 }
 
@@ -261,8 +256,29 @@ input:-webkit-autofill:focus {
   }
 }
 
-/* Tablet and below */
+/* Tablet and below — switch to vertical scroll */
 @media (max-width: 1024px) {
+
+  html,
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+  }
+
+  #root,
+  .app {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .main-content {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: y proximity;
+  }
 
   .horizontal-section {
     min-height: auto;

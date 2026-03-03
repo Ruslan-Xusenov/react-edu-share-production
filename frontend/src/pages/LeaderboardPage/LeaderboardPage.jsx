@@ -45,8 +45,10 @@ const LeaderboardPage = () => {
     return (
         <div className="leaderboard-page">
             <Helmet>
-                <title>REYTING — ENG KO'P BALL TOPLAGANLAR</title>
-                <meta name="description" content="EduShare School reytingi - eng ko'p ball to'plagan o'quvchilar." />
+                <title>Reyting Jadvali — EduShare School | Eng Yaxshi O'quvchilar</title>
+                <meta name="description" content="EduShare School reyting jadvali — eng ko'p ball to'plagan o'quvchilar. O'rganish, test topshirish va sertifikat olish orqali reytingda yuqoriga chiqing!" />
+                <meta name="keywords" content="EduShare reyting, eng yaxshi o'quvchilar, ball tizimi, ta'lim reytingi" />
+                <link rel="canonical" href="https://edushare.uz/leaderboard" />
             </Helmet>
 
             <section className="leaderboard-header-section">
