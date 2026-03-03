@@ -66,10 +66,27 @@ const HomePage = () => {
     return (
         <div className="homepage-horizontal">
             <Helmet>
-                <title>EduShare School — Bepul Onlayn Ta'lim Platformasi | Ruslan Xusenov</title>
+                <title>EduShare — Bepul Onlayn Ta'lim Platformasi | edushare.uz</title>
                 <meta name="description" content="EduShare School — O'zbekistondagi bepul onlayn ta'lim platformasi. Dasturlash, matematika, fan, sport va tillar bo'yicha bepul video kurslar. O'quvchilar bir-birlariga o'rgatadi va o'rganadi." />
-                <meta name="keywords" content="EduShare, bepul kurslar, onlayn ta'lim, dasturlash kurslari, matematika, Ruslan Xusenov, bepul ta'lim platformasi" />
+                <meta name="keywords" content="EduShare, edushare.uz, bepul kurslar, onlayn ta'lim, dasturlash kurslari, matematika, Ruslan Xusenov, bepul ta'lim platformasi" />
                 <link rel="canonical" href="https://edushare.uz/" />
+
+                {/* JSON-LD Schema for Google */}
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "WebSite",
+                        "name": "EduShare",
+                        "alternateName": "edushare.uz",
+                        "url": "https://edushare.uz/",
+                        "description": "O'zbekistondagi bepul onlayn ta'lim platformasi",
+                        "publisher": {
+                            "@type": "Organization",
+                            "name": "EduShare School",
+                            "logo": "https://edushare.uz/static/logo.png"
+                        }
+                    })}
+                </script>
             </Helmet>
 
             {/* HERO SECTION */}
