@@ -516,14 +516,61 @@ const CourseDetailPage = () => {
         <>
             <Helmet>
                 <title>{course.title} — Bepul Dars | EduShare School</title>
-                <meta name="description" content={`${course.title} — ${course.description?.substring(0, 150) || 'EduShare School bepul onlayn dars'}. Bepul ko\'ring va sertifikat oling!`} />
-                <meta name="keywords" content={`${course.title}, bepul dars, EduShare, onlayn o'rganish, ${course.category?.display_name || 'ta\'lim'}`} />
+                <meta name="description" content={`${course.title} — ${course.description?.substring(0, 150) || 'EduShare School bepul onlayn dars'}. Bepul ko'ring va sertifikat oling!`} />
+                <meta name="keywords" content={`${course.title}, bepul dars, EduShare, onlayn o'rganish, ${course.category?.display_name || "ta'lim"}`} />
                 <link rel="canonical" href={`https://edushare.uz/courses/${course.id}`} />
                 <meta property="og:title" content={`${course.title} — EduShare School`} />
                 <meta property="og:description" content={course.description?.substring(0, 200) || 'EduShare School bepul onlayn dars'} />
                 <meta property="og:image" content={course.thumbnail_url || 'https://edushare.uz/og-image.jpg'} />
                 <meta property="og:url" content={`https://edushare.uz/courses/${course.id}`} />
                 <meta property="og:type" content="article" />
+                {/* Course Structured Data for Google Rich Results */}
+                <script type="application/ld+json">{JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "Course",
+                    "name": course.title,
+                    "description": course.description?.substring(0, 300) || '',
+                    "url": `https://edushare.uz/courses/${course.id}`,
+                    "image": course.thumbnail_url || 'https://edushare.uz/og-image.jpg',
+                    "provider": {
+                        "@type": "Organization",
+                        "name": "EduShare School",
+                        "url": "https://edushare.uz",
+                        "sameAs": "https://edushare.uz"
+                    },
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "UZS",
+                        "availability": "https://schema.org/InStock",
+                        "category": "Free"
+                    },
+                    "courseMode": "Online",
+                    "isAccessibleForFree": true,
+                    "inLanguage": "uz",
+                    "educationalLevel": "Beginner",
+                    ...(course.instructor_name && {
+                        "instructor": {
+                            "@type": "Person",
+                            "name": course.instructor_name
+                        }
+                    }),
+                    ...(course.category?.display_name && {
+                        "about": {
+                            "@type": "Thing",
+                            "name": course.category.display_name
+                        }
+                    }),
+                    ...(course.average_rating && {
+                        "aggregateRating": {
+                            "@type": "AggregateRating",
+                            "ratingValue": course.average_rating,
+                            "bestRating": "5",
+                            "worstRating": "1",
+                            "ratingCount": course.rating_count || 1
+                        }
+                    })
+                })}</script>
             </Helmet>
 
             <div className="course-detail-page">

@@ -1,27 +1,50 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import Navbar from './components/Navbar/Navbar';
-import Footer from './components/Footer/Footer';
-import HomePage from './pages/HomePage/HomePage';
-import CoursesPage from './pages/CoursesPage/CoursesPage';
-import CourseDetailPage from './pages/CourseDetailPage/CourseDetailPage';
-import AboutPage from './pages/AboutPage/AboutPage';
-import LoginPage from './pages/LoginPage/LoginPage';
-import SignupPage from './pages/SignupPage/SignupPage';
-import LeaderboardPage from './pages/LeaderboardPage/LeaderboardPage';
-import ProfilePage from './pages/ProfilePage/ProfilePage';
-import MyLearningPage from './pages/MyLearningPage/MyLearningPage';
-import CreateLessonPage from './pages/CreateLessonPage/CreateLessonPage';
-import CertificatePage from './pages/CertificatePage/CertificatePage';
-import { AnimatePresence, motion } from 'framer-motion';
 import apiClient, { API_ENDPOINTS } from './config/api';
 import SplashScreen from './components/SplashScreen/SplashScreen';
 import AIChatBot from './components/AIChatBot/AIChatBot';
+import { AnimatePresence, motion } from 'framer-motion';
 import './App.css';
+
+// ⚡ Lazy-loaded pages — code-splitting for better performance
+const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
+const CoursesPage = lazy(() => import('./pages/CoursesPage/CoursesPage'));
+const CourseDetailPage = lazy(() => import('./pages/CourseDetailPage/CourseDetailPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage/AboutPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage/LoginPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage/SignupPage'));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage/LeaderboardPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage/ProfilePage'));
+const MyLearningPage = lazy(() => import('./pages/MyLearningPage/MyLearningPage'));
+const CreateLessonPage = lazy(() => import('./pages/CreateLessonPage/CreateLessonPage'));
+const CertificatePage = lazy(() => import('./pages/CertificatePage/CertificatePage'));
 
 // Pages that use horizontal scroll (desktop)
 const HORIZONTAL_ROUTES = ['/', '/about', '/leaderboard'];
+
+// Loading fallback for lazy-loaded pages
+const PageLoader = () => (
+  <div style={{
+    width: '100vw',
+    height: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: '#030308',
+    flexShrink: 0,
+  }}>
+    <div style={{
+      width: '40px',
+      height: '40px',
+      border: '3px solid rgba(0, 242, 254, 0.1)',
+      borderTopColor: '#00f2fe',
+      borderRadius: '50%',
+      animation: 'spin 0.8s linear infinite',
+    }} />
+  </div>
+);
 
 // ScrollReset component — scroll to top on navigation
 function ScrollReset() {
@@ -73,6 +96,7 @@ const PageWrapper = ({ children }) => (
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     style={{ width: '100%', flexShrink: 0 }}
+    role="main"
   >
     {children}
   </motion.div>
@@ -147,39 +171,46 @@ function App() {
 
   return (
     <HelmetProvider>
+      {/* Default SEO for all pages */}
+      <Helmet>
+        <html lang="uz" />
+        <meta name="theme-color" content="#030308" />
+      </Helmet>
       <ScrollReset />
       <AuthCallbackHandler />
-      <div className="app">
+      <div className="app" role="application" aria-label="EduShare School ta'lim platformasi">
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-        <div className="custom-cursor"></div>
-        <div className="custom-cursor-follower"></div>
-        <div className="scroll-progress"></div>
+        <div className="custom-cursor" aria-hidden="true"></div>
+        <div className="custom-cursor-follower" aria-hidden="true"></div>
+        <div className="scroll-progress" role="progressbar" aria-label="Sahifa scroll progressi" aria-hidden="true"></div>
         <Navbar />
         <AIChatBot />
-        <main className={`main-content ${scrollModeClass}`}>
-          <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<PageWrapper><HomePage /></PageWrapper>} />
-              <Route path="/courses" element={<PageWrapper><CoursesPage /></PageWrapper>} />
-              <Route path="/courses/:id" element={<PageWrapper><CourseDetailPage /></PageWrapper>} />
-              <Route path="/about" element={<PageWrapper><AboutPage /></PageWrapper>} />
-              <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
-              <Route path="/signup" element={<PageWrapper><SignupPage /></PageWrapper>} />
-              <Route path="/leaderboard" element={<PageWrapper><LeaderboardPage /></PageWrapper>} />
-              <Route path="/profile" element={<PageWrapper><ProfilePage /></PageWrapper>} />
-              <Route path="/my-learning" element={<PageWrapper><MyLearningPage /></PageWrapper>} />
-              <Route path="/create-lesson" element={<PageWrapper><CreateLessonPage /></PageWrapper>} />
-              <Route path="/certificate/:id" element={<PageWrapper><CertificatePage /></PageWrapper>} />
-              <Route path="*" element={
-                <PageWrapper>
-                  <section className="horizontal-section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                    <h1>404</h1>
-                    <p>Sahifa topilmadi</p>
-                  </section>
-                </PageWrapper>
-              } />
-            </Routes>
-          </AnimatePresence>
+        <main className={`main-content ${scrollModeClass}`} id="main-content" aria-label="Asosiy kontent">
+          <Suspense fallback={<PageLoader />}>
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<PageWrapper><HomePage /></PageWrapper>} />
+                <Route path="/courses" element={<PageWrapper><CoursesPage /></PageWrapper>} />
+                <Route path="/courses/:id" element={<PageWrapper><CourseDetailPage /></PageWrapper>} />
+                <Route path="/about" element={<PageWrapper><AboutPage /></PageWrapper>} />
+                <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
+                <Route path="/signup" element={<PageWrapper><SignupPage /></PageWrapper>} />
+                <Route path="/leaderboard" element={<PageWrapper><LeaderboardPage /></PageWrapper>} />
+                <Route path="/profile" element={<PageWrapper><ProfilePage /></PageWrapper>} />
+                <Route path="/my-learning" element={<PageWrapper><MyLearningPage /></PageWrapper>} />
+                <Route path="/create-lesson" element={<PageWrapper><CreateLessonPage /></PageWrapper>} />
+                <Route path="/certificate/:id" element={<PageWrapper><CertificatePage /></PageWrapper>} />
+                <Route path="*" element={
+                  <PageWrapper>
+                    <section className="horizontal-section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} aria-label="404 Sahifa topilmadi">
+                      <h1>404</h1>
+                      <p>Sahifa topilmadi</p>
+                    </section>
+                  </PageWrapper>
+                } />
+              </Routes>
+            </AnimatePresence>
+          </Suspense>
         </main>
       </div>
     </HelmetProvider>

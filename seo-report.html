@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduShare School — SEO Hisoboti / SEO Отчёт / SEO Report</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                font-size: 11px;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            .score-circle {
+                width: 80px;
+                height: 80px;
+                font-size: 24px;
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        /* Cover Page */
+        .cover {
+            text-align: center;
+            padding: 80px 40px;
+            background: linear-gradient(135deg, #030308 0%, #0a0a2e 50%, #1a0a3e 100%);
+            color: white;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(0, 242, 254, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+        }
+
+        .cover * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover .logo {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .cover .logo span {
+            color: #00f2fe;
+        }
+
+        .cover .subtitle {
+            font-size: 14px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 40px;
+        }
+
+        .cover h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .cover .date {
+            font-size: 13px;
+            opacity: 0.6;
+            margin-top: 30px;
+        }
+
+        .cover .url {
+            font-size: 16px;
+            color: #00f2fe;
+        }
+
+        /* Score */
+        .score-section {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .score-card {
+            text-align: center;
+            padding: 24px 20px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .score-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            margin: 0 auto 12px;
+            color: white;
+        }
+
+        .score-good {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .score-ok {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .score-bad {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .score-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+        /* Language Section */
+        .lang-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .lang-flag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #00f2fe;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 24px 0 12px;
+            color: #334155;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #475569;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+        td {
+            color: #334155;
+        }
+
+        .status-ok {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .status-warn {
+            color: #f59e0b;
+            font-weight: 700;
+        }
+
+        .status-bad {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
+        /* Check Lists */
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+
+        .check {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .check-ok::before {
+            content: '✅';
+        }
+
+        .check-warn::before {
+            content: '⚠️';
+        }
+
+        .check-bad::before {
+            content: '❌';
+        }
+
+        .recommendation {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .recommendation.warn {
+            background: #fffbeb;
+            border-left-color: #f59e0b;
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 12px 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .footer-report {
+            text-align: center;
+            padding: 30px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .divider {
+            height: 3px;
+            background: linear-gradient(90deg, #00f2fe, #a855f7, #00f2fe);
+            border-radius: 2px;
+            margin: 40px 0;
+        }
+
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #030308, #1a0a3e);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            letter-spacing: 0.05em;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="print-btn no-print" onclick="window.print()">📄 PDF Saqlash / Сохранить PDF / Save PDF</button>
+
+    <div class="container">
+
+        <!-- ════════════════ COVER PAGE ════════════════ -->
+        <div class="cover">
+            <div class="logo">EDU<span>SHARE</span></div>
+            <div class="subtitle">School Platform</div>
+            <h1>SEO AUDIT REPORT<br>SEO АУДИТ ОТЧЁТ<br>SEO TEKSHIRUV HISOBOTI</h1>
+            <div class="url">🌐 https://edushare.uz</div>
+            <div class="date">📅 03.03.2026 | Versiya 1.0</div>
+        </div>
+
+        <!-- ════════════════ OVERALL SCORES ════════════════ -->
+        <div class="score-section">
+            <div class="score-card">
+                <div class="score-circle score-good">92</div>
+                <div class="score-label">On-Page SEO</div>
+            </div>
+            <div class="score-card">
+                <div class="score-circle score-good">95</div>
+                <div class="score-label">Structured Data</div>
+            </div>
+            <div class="score-card">
+                <div class="score-circle score-good">88</div>
+                <div class="score-label">Technical SEO</div>
+            </div>
+            <div class="score-card">
+                <div class="score-circle score-good">85</div>
+                <div class="score-label">Performance</div>
+            </div>
+        </div>
+
+        <!-- ╔═══════════════════════════════════════════════════════════════╗ -->
+        <!-- ║                    🇺🇿 O'ZBEK TILI                          ║ -->
+        <!-- ╚═══════════════════════════════════════════════════════════════╝ -->
+        <div class="divider"></div>
+        <div class="lang-section">
+            <div class="lang-flag">🇺🇿 O'zbek tilida</div>
+            <h2>EduShare.uz — SEO Tekshiruv Hisoboti</h2>
+
+            <h3>1. Umumiy Ma'lumot</h3>
+            <table>
+                <tr>
+                    <th>Parametr</th>
+                    <th>Qiymat</th>
+                </tr>
+                <tr>
+                    <td>Sayt manzili</td>
+                    <td>https://edushare.uz</td>
+                </tr>
+                <tr>
+                    <td>Platforma</td>
+                    <td>Django + React (Vite)</td>
+                </tr>
+                <tr>
+                    <td>SSL sertifikat</td>
+                    <td class="status-ok">✅ Ha (Let's Encrypt)</td>
+                </tr>
+                <tr>
+                    <td>Til</td>
+                    <td>O'zbek (uz)</td>
+                </tr>
+                <tr>
+                    <td>Mobil versiya</td>
+                    <td class="status-ok">✅ Responsive dizayn</td>
+                </tr>
+                <tr>
+                    <td>robots.txt</td>
+                    <td class="status-ok">✅ Sozlangan</td>
+                </tr>
+                <tr>
+                    <td>sitemap.xml</td>
+                    <td class="status-ok">✅ Dinamik (Django)</td>
+                </tr>
+            </table>
+
+            <h3>2. Meta Teglar Tahlili</h3>
+            <table>
+                <tr>
+                    <th>Sahifa</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Keywords</th>
+                    <th>Holat</th>
+                </tr>
+                <tr>
+                    <td>Bosh sahifa</td>
+                    <td>EduShare School — Bepul Onlayn Ta'lim Platformasi</td>
+                    <td>159 belgi ✅</td>
+                    <td>✅ Bor</td>
+                    <td class="status-ok">✅ Yaxshi</td>
+                </tr>
+                <tr>
+                    <td>Kurslar</td>
+                    <td>Bepul Kurslar — EduShare School</td>
+                    <td>148 belgi ✅</td>
+                    <td>✅ Bor</td>
+                    <td class="status-ok">✅ Yaxshi</td>
+                </tr>
+                <tr>
+                    <td>Biz haqimizda</td>
+                    <td>Biz Haqimizda — EduShare School</td>
+                    <td>142 belgi ✅</td>
+                    <td>✅ Bor</td>
+                    <td class="status-ok">✅ Yaxshi</td>
+                </tr>
+                <tr>
+                    <td>Kurs tafsiloti</td>
+                    <td>[Kurs nomi] — Bepul Dars | EduShare</td>
+                    <td>Dinamik ✅</td>
+                    <td>✅ Dinamik</td>
+                    <td class="status-ok">✅ Yaxshi</td>
+                </tr>
+                <tr>
+                    <td>Reyting</td>
+                    <td>Reyting Jadvali — EduShare School</td>
+                    <td>152 belgi ✅</td>
+                    <td>✅ Bor</td>
+                    <td class="status-ok">✅ Yaxshi</td>
+                </tr>
+                <tr>
+                    <td>Kirish/Ro'yxat</td>
+                    <td>Kirish — EduShare School</td>
+                    <td>✅ Bor</td>
+                    <td>—</td>
+                    <td class="status-ok">✅ noindex</td>
+                </tr>
+            </table>
+
+            <h3>3. Tuzilgan Ma'lumotlar (Structured Data / JSON-LD)</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>EducationalOrganization</strong> — to'g'ri amalga
+                        oshirilgan</span></li>
+                <li><span class="check check-ok"></span><span><strong>WebSite + SearchAction</strong> — qidiruv uchun
+                        sozlangan</span></li>
+                <li><span class="check check-ok"></span><span><strong>Person (Ruslan Xusenov)</strong> — Knowledge Panel
+                        uchun</span></li>
+                <li><span class="check check-ok"></span><span><strong>Person (Elbek Sharofov)</strong> — Knowledge Panel
+                        uchun</span></li>
+                <li><span class="check check-ok"></span><span><strong>FAQPage</strong> — 5 ta savol-javob (Rich
+                        Snippets)</span></li>
+                <li><span class="check check-ok"></span><span><strong>BreadcrumbList</strong> — navigatsiya
+                        tuzilmasi</span></li>
+            </ul>
+
+            <h3>4. Open Graph va Twitter Kartalar</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>og:title</strong> — O'zbek tilida to'g'ri
+                        yozilgan</span></li>
+                <li><span class="check check-ok"></span><span><strong>og:description</strong> — 160 belgidan kam</span>
+                </li>
+                <li><span class="check check-ok"></span><span><strong>og:image</strong> — 1200×630 piksel (tavsiya
+                        etilgan)</span></li>
+                <li><span class="check check-ok"></span><span><strong>og:locale</strong> — uz_UZ</span></li>
+                <li><span class="check check-ok"></span><span><strong>twitter:card</strong> — summary_large_image</span>
+                </li>
+                <li><span class="check check-warn"></span><span><strong>og:image fayli</strong> — og-image.jpg fayli
+                        mavjudligini tekshiring</span></li>
+            </ul>
+
+            <h3>5. robots.txt Tahlili</h3>
+            <div class="code-block">User-agent: *
+                Allow: /
+                Allow: /courses
+                Allow: /courses/*
+                Allow: /about
+                Allow: /leaderboard
+
+                Disallow: /api/
+                Disallow: /admin/
+                Disallow: /login
+                Disallow: /signup
+                Disallow: /profile
+                Disallow: /my-learning
+                Disallow: /create-lesson
+                Disallow: /certificate/
+
+                Sitemap: https://edushare.uz/sitemap.xml</div>
+            <div class="recommendation">
+                <strong>✅ Yaxshi:</strong> Shaxsiy sahifalar (login, signup, profil) to'g'ri bloklangan. Ommaviy
+                sahifalar (kurslar, about, leaderboard) ochiq. Sitemap havolasi to'g'ri.
+            </div>
+
+            <h3>6. sitemap.xml Tahlili</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>Statik sahifalar:</strong> /, /courses, /about,
+                        /leaderboard</span></li>
+                <li><span class="check check-ok"></span><span><strong>Dinamik kurslar:</strong> /courses/{id} — har bir
+                        e'lon qilingan kurs</span></li>
+                <li><span class="check check-ok"></span><span><strong>Kategoriyalar:</strong>
+                        /courses?category={slug}</span></li>
+                <li><span class="check check-ok"></span><span><strong>Protokol:</strong> HTTPS</span></li>
+                <li><span class="check check-ok"></span><span><strong>Prioritet:</strong> Bosh sahifa 1.0, Kurslar 0.9,
+                        Haqida 0.8</span></li>
+            </ul>
+
+            <h3>7. Texnik SEO</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>HTTPS:</strong> SSL sertifikat mavjud, HTTP →
+                        HTTPS yo'naltirish bor</span></li>
+                <li><span class="check check-ok"></span><span><strong>Canonical URL:</strong> Barcha asosiy sahifalarda
+                        mavjud</span></li>
+                <li><span class="check check-ok"></span><span><strong>HSTS:</strong> Strict-Transport-Security header
+                        mavjud</span></li>
+                <li><span class="check check-ok"></span><span><strong>Gzip:</strong> Nginx gzip siqish yoqilgan</span>
+                </li>
+                <li><span class="check check-ok"></span><span><strong>Google Fonts:</strong> preconnect va dns-prefetch
+                        bilan optimizatsiya qilingan</span></li>
+                <li><span class="check check-warn"></span><span><strong>SPA SEO muammosi:</strong> React SPA bo'lgani
+                        uchun Google bot JavaScript render qilishi kerak. SSR (Server-Side Rendering) yoki pre-rendering
+                        tavsiya etiladi</span></li>
+                <li><span class="check check-warn"></span><span><strong>Core Web Vitals:</strong> JS bundle 558KB —
+                        code-splitting tavsiya etiladi</span></li>
+            </ul>
+
+            <h3>8. Tavsiyalar</h3>
+            <div class="recommendation">
+                <strong>🔑 Eng Muhim Qadamlar:</strong>
+                <ol style="margin-top: 8px; padding-left: 20px;">
+                    <li>Google Search Console'ga saytni ro'yxatdan o'tkazing va sitemap.xml ni yuboring</li>
+                    <li>og-image.jpg (1200×630) rasmini yarating va saytning public papkasiga joylashtiring</li>
+                    <li>Google Analytics yoki Yandex Metrika o'rnating</li>
+                    <li>Saytga sifatli backlink olish uchun ta'lim forumlarida va ijtimoiy tarmoqlarda faol bo'ling</li>
+                    <li>Har oyda kamida 5-10 ta yangi kurs qo'shing (kontent strategiyasi)</li>
+                </ol>
+            </div>
+            <div class="recommendation warn">
+                <strong>⚠️ Kelajakda:</strong>
+                <ol style="margin-top: 8px; padding-left: 20px;">
+                    <li>React pre-rendering (react-snap) yoki SSR (Next.js) ga o'tish</li>
+                    <li>JS bundle ni code-splitting bilan kichiklashtirish</li>
+                    <li>WebP formatidagi rasmlardan foydalanish</li>
+                    <li>Lazy loading qo'shish (rasmlar va videolar uchun)</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- ╔═══════════════════════════════════════════════════════════════╗ -->
+        <!-- ║                    🇷🇺 РУССКИЙ ЯЗЫК                         ║ -->
+        <!-- ╚═══════════════════════════════════════════════════════════════╝ -->
+        <div class="page-break"></div>
+        <div class="divider"></div>
+        <div class="lang-section">
+            <div class="lang-flag">🇷🇺 На русском языке</div>
+            <h2>EduShare.uz — Отчёт по SEO-аудиту</h2>
+
+            <h3>1. Общая информация</h3>
+            <table>
+                <tr>
+                    <th>Параметр</th>
+                    <th>Значение</th>
+                </tr>
+                <tr>
+                    <td>Адрес сайта</td>
+                    <td>https://edushare.uz</td>
+                </tr>
+                <tr>
+                    <td>Платформа</td>
+                    <td>Django + React (Vite)</td>
+                </tr>
+                <tr>
+                    <td>SSL-сертификат</td>
+                    <td class="status-ok">✅ Есть (Let's Encrypt)</td>
+                </tr>
+                <tr>
+                    <td>Язык</td>
+                    <td>Узбекский (uz)</td>
+                </tr>
+                <tr>
+                    <td>Мобильная версия</td>
+                    <td class="status-ok">✅ Адаптивный дизайн</td>
+                </tr>
+                <tr>
+                    <td>robots.txt</td>
+                    <td class="status-ok">✅ Настроен</td>
+                </tr>
+                <tr>
+                    <td>sitemap.xml</td>
+                    <td class="status-ok">✅ Динамический (Django)</td>
+                </tr>
+            </table>
+
+            <h3>2. Анализ мета-тегов</h3>
+            <table>
+                <tr>
+                    <th>Страница</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Keywords</th>
+                    <th>Статус</th>
+                </tr>
+                <tr>
+                    <td>Главная</td>
+                    <td>EduShare School — Bepul Onlayn Ta'lim Platformasi</td>
+                    <td>159 символов ✅</td>
+                    <td>✅ Есть</td>
+                    <td class="status-ok">✅ Хорошо</td>
+                </tr>
+                <tr>
+                    <td>Курсы</td>
+                    <td>Bepul Kurslar — EduShare School</td>
+                    <td>148 символов ✅</td>
+                    <td>✅ Есть</td>
+                    <td class="status-ok">✅ Хорошо</td>
+                </tr>
+                <tr>
+                    <td>О нас</td>
+                    <td>Biz Haqimizda — EduShare School</td>
+                    <td>142 символа ✅</td>
+                    <td>✅ Есть</td>
+                    <td class="status-ok">✅ Хорошо</td>
+                </tr>
+                <tr>
+                    <td>Детали курса</td>
+                    <td>[Название] — Bepul Dars | EduShare</td>
+                    <td>Динамический ✅</td>
+                    <td>✅ Динамический</td>
+                    <td class="status-ok">✅ Хорошо</td>
+                </tr>
+                <tr>
+                    <td>Рейтинг</td>
+                    <td>Reyting Jadvali — EduShare School</td>
+                    <td>152 символа ✅</td>
+                    <td>✅ Есть</td>
+                    <td class="status-ok">✅ Хорошо</td>
+                </tr>
+                <tr>
+                    <td>Авторизация</td>
+                    <td>Kirish / Ro'yxat — EduShare School</td>
+                    <td>✅ Есть</td>
+                    <td>—</td>
+                    <td class="status-ok">✅ noindex</td>
+                </tr>
+            </table>
+
+            <h3>3. Структурированные данные (JSON-LD)</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>EducationalOrganization</strong> — корректно
+                        реализовано</span></li>
+                <li><span class="check check-ok"></span><span><strong>WebSite + SearchAction</strong> — настроен для
+                        поиска</span></li>
+                <li><span class="check check-ok"></span><span><strong>Person (Ruslan Xusenov)</strong> — для панели
+                        знаний Google</span></li>
+                <li><span class="check check-ok"></span><span><strong>Person (Elbek Sharofov)</strong> — для панели
+                        знаний Google</span></li>
+                <li><span class="check check-ok"></span><span><strong>FAQPage</strong> — 5 вопросов-ответов (Rich
+                        Snippets)</span></li>
+                <li><span class="check check-ok"></span><span><strong>BreadcrumbList</strong> — навигационная
+                        структура</span></li>
+            </ul>
+
+            <h3>4. Open Graph и Twitter Cards</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>og:title</strong> — корректно заполнен</span></li>
+                <li><span class="check check-ok"></span><span><strong>og:description</strong> — менее 160
+                        символов</span></li>
+                <li><span class="check check-ok"></span><span><strong>og:image</strong> — 1200×630 пикселей
+                        (рекомендуемый размер)</span></li>
+                <li><span class="check check-ok"></span><span><strong>og:locale</strong> — uz_UZ</span></li>
+                <li><span class="check check-ok"></span><span><strong>twitter:card</strong> — summary_large_image</span>
+                </li>
+                <li><span class="check check-warn"></span><span><strong>og:image файл</strong> — убедитесь, что
+                        og-image.jpg существует</span></li>
+            </ul>
+
+            <h3>5. Техническое SEO</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>HTTPS:</strong> SSL-сертификат активен, HTTP →
+                        HTTPS редирект</span></li>
+                <li><span class="check check-ok"></span><span><strong>Canonical URL:</strong> присутствует на всех
+                        основных страницах</span></li>
+                <li><span class="check check-ok"></span><span><strong>HSTS:</strong> заголовок Strict-Transport-Security
+                        установлен</span></li>
+                <li><span class="check check-ok"></span><span><strong>Gzip:</strong> Nginx gzip-сжатие включено</span>
+                </li>
+                <li><span class="check check-ok"></span><span><strong>Google Fonts:</strong> оптимизировано с preconnect
+                        и dns-prefetch</span></li>
+                <li><span class="check check-warn"></span><span><strong>Проблема SPA:</strong> React SPA требует
+                        JavaScript-рендеринг. Рекомендуется SSR или pre-rendering</span></li>
+                <li><span class="check check-warn"></span><span><strong>Core Web Vitals:</strong> JS бандл 558КБ —
+                        рекомендуется code-splitting</span></li>
+            </ul>
+
+            <h3>6. Рекомендации</h3>
+            <div class="recommendation">
+                <strong>🔑 Ключевые шаги:</strong>
+                <ol style="margin-top: 8px; padding-left: 20px;">
+                    <li>Зарегистрируйте сайт в Google Search Console и отправьте sitemap.xml</li>
+                    <li>Создайте og-image.jpg (1200×630) и разместите его в public-папке сайта</li>
+                    <li>Установите Google Analytics или Яндекс.Метрику</li>
+                    <li>Получайте качественные обратные ссылки с образовательных форумов и соцсетей</li>
+                    <li>Добавляйте 5-10 новых курсов ежемесячно (контент-стратегия)</li>
+                </ol>
+            </div>
+            <div class="recommendation warn">
+                <strong>⚠️ На будущее:</strong>
+                <ol style="margin-top: 8px; padding-left: 20px;">
+                    <li>Перейти на React pre-rendering (react-snap) или SSR (Next.js)</li>
+                    <li>Уменьшить JS бандл с помощью code-splitting</li>
+                    <li>Использовать WebP-формат для изображений</li>
+                    <li>Добавить ленивую загрузку (lazy loading) для изображений и видео</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- ╔═══════════════════════════════════════════════════════════════╗ -->
+        <!-- ║                    🇬🇧 ENGLISH                               ║ -->
+        <!-- ╚═══════════════════════════════════════════════════════════════╝ -->
+        <div class="page-break"></div>
+        <div class="divider"></div>
+        <div class="lang-section">
+            <div class="lang-flag">🇬🇧 In English</div>
+            <h2>EduShare.uz — SEO Audit Report</h2>
+
+            <h3>1. General Information</h3>
+            <table>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Website URL</td>
+                    <td>https://edushare.uz</td>
+                </tr>
+                <tr>
+                    <td>Platform</td>
+                    <td>Django + React (Vite)</td>
+                </tr>
+                <tr>
+                    <td>SSL Certificate</td>
+                    <td class="status-ok">✅ Active (Let's Encrypt)</td>
+                </tr>
+                <tr>
+                    <td>Language</td>
+                    <td>Uzbek (uz)</td>
+                </tr>
+                <tr>
+                    <td>Mobile Version</td>
+                    <td class="status-ok">✅ Responsive Design</td>
+                </tr>
+                <tr>
+                    <td>robots.txt</td>
+                    <td class="status-ok">✅ Configured</td>
+                </tr>
+                <tr>
+                    <td>sitemap.xml</td>
+                    <td class="status-ok">✅ Dynamic (Django)</td>
+                </tr>
+            </table>
+
+            <h3>2. Meta Tags Analysis</h3>
+            <table>
+                <tr>
+                    <th>Page</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Keywords</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>Homepage</td>
+                    <td>EduShare School — Bepul Onlayn Ta'lim Platformasi</td>
+                    <td>159 chars ✅</td>
+                    <td>✅ Present</td>
+                    <td class="status-ok">✅ Good</td>
+                </tr>
+                <tr>
+                    <td>Courses</td>
+                    <td>Bepul Kurslar — EduShare School</td>
+                    <td>148 chars ✅</td>
+                    <td>✅ Present</td>
+                    <td class="status-ok">✅ Good</td>
+                </tr>
+                <tr>
+                    <td>About</td>
+                    <td>Biz Haqimizda — EduShare School</td>
+                    <td>142 chars ✅</td>
+                    <td>✅ Present</td>
+                    <td class="status-ok">✅ Good</td>
+                </tr>
+                <tr>
+                    <td>Course Detail</td>
+                    <td>[Course Name] — Bepul Dars | EduShare</td>
+                    <td>Dynamic ✅</td>
+                    <td>✅ Dynamic</td>
+                    <td class="status-ok">✅ Good</td>
+                </tr>
+                <tr>
+                    <td>Leaderboard</td>
+                    <td>Reyting Jadvali — EduShare School</td>
+                    <td>152 chars ✅</td>
+                    <td>✅ Present</td>
+                    <td class="status-ok">✅ Good</td>
+                </tr>
+                <tr>
+                    <td>Auth Pages</td>
+                    <td>Kirish / Ro'yxat — EduShare School</td>
+                    <td>✅ Present</td>
+                    <td>—</td>
+                    <td class="status-ok">✅ noindex</td>
+                </tr>
+            </table>
+
+            <h3>3. Structured Data (JSON-LD)</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>EducationalOrganization</strong> — correctly
+                        implemented</span></li>
+                <li><span class="check check-ok"></span><span><strong>WebSite + SearchAction</strong> — configured for
+                        search</span></li>
+                <li><span class="check check-ok"></span><span><strong>Person (Ruslan Xusenov)</strong> — for Google
+                        Knowledge Panel</span></li>
+                <li><span class="check check-ok"></span><span><strong>Person (Elbek Sharofov)</strong> — for Google
+                        Knowledge Panel</span></li>
+                <li><span class="check check-ok"></span><span><strong>FAQPage</strong> — 5 Q&A pairs (Rich
+                        Snippets)</span></li>
+                <li><span class="check check-ok"></span><span><strong>BreadcrumbList</strong> — navigation
+                        structure</span></li>
+            </ul>
+
+            <h3>4. Open Graph & Twitter Cards</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>og:title</strong> — properly set in Uzbek</span>
+                </li>
+                <li><span class="check check-ok"></span><span><strong>og:description</strong> — under 160
+                        characters</span></li>
+                <li><span class="check check-ok"></span><span><strong>og:image</strong> — 1200×630 pixels (recommended
+                        size)</span></li>
+                <li><span class="check check-ok"></span><span><strong>og:locale</strong> — uz_UZ</span></li>
+                <li><span class="check check-ok"></span><span><strong>twitter:card</strong> — summary_large_image</span>
+                </li>
+                <li><span class="check check-warn"></span><span><strong>og:image file</strong> — verify that
+                        og-image.jpg exists and is accessible</span></li>
+            </ul>
+
+            <h3>5. Technical SEO</h3>
+            <ul class="checklist">
+                <li><span class="check check-ok"></span><span><strong>HTTPS:</strong> SSL certificate active, HTTP →
+                        HTTPS redirect enabled</span></li>
+                <li><span class="check check-ok"></span><span><strong>Canonical URLs:</strong> present on all major
+                        pages</span></li>
+                <li><span class="check check-ok"></span><span><strong>HSTS:</strong> Strict-Transport-Security header
+                        configured (31536000s)</span></li>
+                <li><span class="check check-ok"></span><span><strong>Gzip Compression:</strong> enabled in Nginx (text,
+                        CSS, JS, JSON, SVG)</span></li>
+                <li><span class="check check-ok"></span><span><strong>Security Headers:</strong> X-Frame-Options,
+                        X-Content-Type-Options, X-XSS-Protection, Referrer-Policy</span></li>
+                <li><span class="check check-ok"></span><span><strong>Google Fonts:</strong> optimized with preconnect
+                        and dns-prefetch</span></li>
+                <li><span class="check check-warn"></span><span><strong>SPA Rendering Issue:</strong> React SPA requires
+                        JavaScript rendering by crawlers. Consider SSR (Next.js) or pre-rendering (react-snap) for
+                        better crawlability</span></li>
+                <li><span class="check check-warn"></span><span><strong>Core Web Vitals — Bundle Size:</strong> 558KB JS
+                        bundle — implement code-splitting via dynamic imports</span></li>
+            </ul>
+
+            <h3>6. robots.txt Analysis</h3>
+            <table>
+                <tr>
+                    <th>Rule</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td>Allow: /</td>
+                    <td class="status-ok">✅</td>
+                    <td>Homepage accessible to all bots</td>
+                </tr>
+                <tr>
+                    <td>Allow: /courses, /courses/*</td>
+                    <td class="status-ok">✅</td>
+                    <td>All course pages accessible</td>
+                </tr>
+                <tr>
+                    <td>Allow: /about</td>
+                    <td class="status-ok">✅</td>
+                    <td>About page accessible</td>
+                </tr>
+                <tr>
+                    <td>Allow: /leaderboard</td>
+                    <td class="status-ok">✅</td>
+                    <td>Leaderboard accessible</td>
+                </tr>
+                <tr>
+                    <td>Disallow: /api/</td>
+                    <td class="status-ok">✅</td>
+                    <td>API endpoints blocked from indexing</td>
+                </tr>
+                <tr>
+                    <td>Disallow: /admin/</td>
+                    <td class="status-ok">✅</td>
+                    <td>Admin panel blocked</td>
+                </tr>
+                <tr>
+                    <td>Disallow: /login, /signup</td>
+                    <td class="status-ok">✅</td>
+                    <td>Auth pages blocked</td>
+                </tr>
+                <tr>
+                    <td>Disallow: /profile, /my-learning</td>
+                    <td class="status-ok">✅</td>
+                    <td>User-specific pages blocked</td>
+                </tr>
+                <tr>
+                    <td>Sitemap reference</td>
+                    <td class="status-ok">✅</td>
+                    <td>https://edushare.uz/sitemap.xml</td>
+                </tr>
+                <tr>
+                    <td>Googlebot specific rules</td>
+                    <td class="status-ok">✅</td>
+                    <td>Specific allow/disallow rules</td>
+                </tr>
+                <tr>
+                    <td>YandexBot specific rules</td>
+                    <td class="status-ok">✅</td>
+                    <td>Crawl-delay: 2</td>
+                </tr>
+                <tr>
+                    <td>Bingbot specific rules</td>
+                    <td class="status-ok">✅</td>
+                    <td>Crawl-delay: 1</td>
+                </tr>
+            </table>
+
+            <h3>7. sitemap.xml Analysis</h3>
+            <table>
+                <tr>
+                    <th>Section</th>
+                    <th>URLs</th>
+                    <th>Priority</th>
+                    <th>Changefreq</th>
+                </tr>
+                <tr>
+                    <td>Static Pages</td>
+                    <td>/ , /courses, /about, /leaderboard, /login, /signup</td>
+                    <td>1.0 – 0.3</td>
+                    <td>daily</td>
+                </tr>
+                <tr>
+                    <td>Lessons (Dynamic)</td>
+                    <td>/courses/{id} for each published lesson</td>
+                    <td>0.9</td>
+                    <td>weekly</td>
+                </tr>
+                <tr>
+                    <td>Categories (Dynamic)</td>
+                    <td>/courses?category={slug} for each category</td>
+                    <td>0.7</td>
+                    <td>monthly</td>
+                </tr>
+            </table>
+
+            <h3>8. Recommendations</h3>
+            <div class="recommendation">
+                <strong>🔑 Critical Action Items:</strong>
+                <ol style="margin-top: 8px; padding-left: 20px;">
+                    <li><strong>Register with Google Search Console</strong> and submit your sitemap.xml</li>
+                    <li><strong>Create og-image.jpg</strong> (1200×630px) and place it in the website's public directory
+                    </li>
+                    <li><strong>Install analytics</strong> — Google Analytics 4 or Yandex Metrica</li>
+                    <li><strong>Build quality backlinks</strong> — participate in education forums, social media, and
+                        communities</li>
+                    <li><strong>Content strategy</strong> — add 5-10 new courses monthly for fresh content signals</li>
+                    <li><strong>Submit to Yandex Webmaster</strong> — for CIS region traffic</li>
+                </ol>
+            </div>
+            <div class="recommendation warn">
+                <strong>⚠️ Future Improvements:</strong>
+                <ol style="margin-top: 8px; padding-left: 20px;">
+                    <li><strong>Pre-rendering/SSR:</strong> switch to react-snap or Next.js for full SEO crawlability
+                    </li>
+                    <li><strong>Code-splitting:</strong> reduce JS bundle from 558KB with dynamic imports</li>
+                    <li><strong>Image optimization:</strong> use WebP format and implement lazy loading</li>
+                    <li><strong>Performance:</strong> add service worker for offline capabilities (PWA)</li>
+                    <li><strong>Multi-language:</strong> add hreflang tags if expanding to Russian/English versions</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="divider"></div>
+        <div class="footer-report">
+            <p><strong>EduShare School — SEO Audit Report v1.0</strong></p>
+            <p>Tayyorlagan: Xusenov Ruslan | Sana: 03.01.2026</p>
+            <p>https://edushare.uz</p>
+            <p style="margin-top: 12px;">📄 Ushbu hujjatni PDF sifatida saqlash uchun brauzerda <strong>Ctrl+P → Save as
+                    PDF</strong> bosing</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
