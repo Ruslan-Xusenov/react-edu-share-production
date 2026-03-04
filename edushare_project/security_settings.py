@@ -47,13 +47,13 @@ CONTENT_SECURITY_POLICY = {
             "https://cdn.jsdelivr.net",
             "https://fonts.googleapis.com",
         ),
-        'img-src': ("'self'", "data:", "https:", "http:", "*"),
+        'img-src': ("'self'", "data:", "https:", "https://ui-avatars.com"),
         'font-src': (
             "'self'", 
             "https://fonts.gstatic.com",
             "https://stackpath.bootstrapcdn.com",
         ),
-        'connect-src': ("'self'", "https:", "http:", "ws:", "wss:"),
+        'connect-src': ("'self'", "https://edushare.uz", "https://openrouter.ai"),
         'media-src': ("'self'", "https:", "http:", "blob:", "data:"), # Videolar uchun ruxsat
         'frame-src': ("'self'", "https://www.youtube.com", "https://youtube.com"), # YouTube embed uchun
         'frame-ancestors': ("'none'",),
@@ -63,8 +63,8 @@ CONTENT_SECURITY_POLICY = {
 }
 
 # Advanced Axes Configuration - Brute Force himoyasi
-AXES_FAILURE_LIMIT = 5  # 5 marta noto'g'ri urinishdan keyin bloklash
-AXES_COOLOFF_TIME = 1  # 1 soat bloklash
+AXES_FAILURE_LIMIT = 3  # 3 marta noto'g'ri urinishdan keyin bloklash
+AXES_COOLOFF_TIME = 2  # 2 soat bloklash
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'
 AXES_HANDLER = 'axes.handlers.database.AxesDatabaseHandler'

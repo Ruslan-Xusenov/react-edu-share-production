@@ -1,24 +1,18 @@
-#!/usr/bin/env python
-"""
-Security Test Script - Himoya tizimlarini test qilish
-"""
 import requests
 import time
 from colorama import Fore, Style, init
 
 init(autoreset=True)
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://127.0.0.1:8000/"
 
 def print_test(name, status):
-    """Test natijasini chiroyli formatda chiqarish"""
     if status:
         print(f"{Fore.GREEN}✓{Style.RESET_ALL} {name}")
     else:
         print(f"{Fore.RED}✗{Style.RESET_ALL} {name}")
 
 def test_sql_injection():
-    """SQL Injection himoyasini test qilish"""
     print(f"\n{Fore.CYAN}=== SQL Injection Test ==={Style.RESET_ALL}")
     
     payloads = [
@@ -41,7 +35,6 @@ def test_sql_injection():
             print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
 
 def test_xss_attack():
-    """XSS himoyasini test qilish"""
     print(f"\n{Fore.CYAN}=== XSS Attack Test ==={Style.RESET_ALL}")
     
     payloads = [
@@ -64,7 +57,6 @@ def test_xss_attack():
             print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
 
 def test_rate_limiting():
-    """Rate limiting himoyasini test qilish"""
     print(f"\n{Fore.CYAN}=== Rate Limiting Test ==={Style.RESET_ALL}")
     
     print(f"{Fore.YELLOW}Sending 130 requests...{Style.RESET_ALL}")
@@ -85,7 +77,6 @@ def test_rate_limiting():
         print_test("Rate limiting (130 requests should be blocked)", False)
 
 def test_path_traversal():
-    """Path Traversal himoyasini test qilish"""
     print(f"\n{Fore.CYAN}=== Path Traversal Test ==={Style.RESET_ALL}")
     
     payloads = [
@@ -103,7 +94,6 @@ def test_path_traversal():
             print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
 
 def test_security_headers():
-    """Security headers mavjudligini tekshirish"""
     print(f"\n{Fore.CYAN}=== Security Headers Test ==={Style.RESET_ALL}")
     
     try:
@@ -132,7 +122,6 @@ def main():
     
     print(f"\n{Fore.CYAN}Testing server: {BASE_URL}{Style.RESET_ALL}")
     
-    # Server ishlayotganini tekshirish
     try:
         response = requests.get(BASE_URL, timeout=5)
         print(f"{Fore.GREEN}✓ Server is running{Style.RESET_ALL}")
@@ -140,12 +129,11 @@ def main():
         print(f"{Fore.RED}✗ Server is not running: {e}{Style.RESET_ALL}")
         return
     
-    # Testlarni boshlash
     test_security_headers()
     test_sql_injection()
     test_xss_attack()
     test_path_traversal()
-    # test_rate_limiting()  # Bu test uzoq vaqt oladi, kerak bo'lsa kommentdan chiqaring
+    test_rate_limiting()
     
     print(f"\n{Fore.YELLOW}{'='*50}{Style.RESET_ALL}")
     print(f"{Fore.GREEN}Testing completed!{Style.RESET_ALL}")
