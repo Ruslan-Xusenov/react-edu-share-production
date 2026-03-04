@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Notification
+from .models import Notification, ChatViolation, ChatBotAccess
 from accounts.models import CustomUser
 from django.db.models import Count
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from courses.models import Category, Lesson, Certificate
+import os
 
 def home(request):
     categories = Category.objects.all()
@@ -57,6 +58,7 @@ def mark_notification_read(request, notification_id):
     if notification.link:
         return redirect(notification.link)
     return redirect('core:notifications')
+
 @csrf_exempt
 def api_stats(request):
     """API endpoint for platform statistics"""
@@ -72,17 +74,147 @@ def api_stats(request):
     })
 
 
+# ============================================================
+# VIOLATION DETECTION KEYWORDS — serverda qo'shimcha filtr
+# ============================================================
+VIOLATION_KEYWORDS = {
+    'hacking': [
+        'hack', 'crack', 'exploit', 'vulnerability', 'ddos', 'dos attack',
+        'brute force', 'phishing', 'malware', 'trojan', 'ransomware',
+        'keylogger', 'backdoor', 'rootkit', 'injection', 'reverse shell',
+        'metasploit', 'nmap scan', 'password crack', 'wifi hack',
+        'buzish', 'buzib kirish', 'parolni buzish', 'tizimni buzish',
+        'hujum qilish', 'hujum yozib ber', 'hujum kodi',
+    ],
+    'violence': [
+        'qurol', 'bomba', 'portlatish', 'o\'ldirish', 'o\'ldir',
+        'otish', 'pichoq', 'qotillik', 'terroristik', 'terror',
+        'zaharla', 'zaharlash', 'dinamit', 'granata',
+    ],
+    'adult': [
+        'pornograf', '18+', 'erotik', 'seksual', 'yalang\'och',
+        'noqonuniy video', 'bolalar pornog',
+    ],
+    'harassment': [
+        'irqchi', 'diskriminats', 'haqorat', 'kamsit',
+        'fashistik', 'natsistik',
+    ],
+    'harmful': [
+        'narkotik', 'giyohvand', 'nasha', 'gashish', 'geroin',
+        'metamfetamin', 'kokain', 'firibgarlik', 'fraud',
+        'pul yuvish', 'qalbaki pul', 'soxta hujjat',
+    ],
+}
+
+
+def detect_violation(text):
+    """Matnda qoidabuzarlik borligini aniqlash"""
+    lower = text.lower()
+    for v_type, keywords in VIOLATION_KEYWORDS.items():
+        for kw in keywords:
+            if kw in lower:
+                # Severity aniqlash
+                if v_type in ('hacking', 'violence', 'adult'):
+                    severity = 'high'
+                elif v_type in ('harassment', 'harmful'):
+                    severity = 'critical'
+                else:
+                    severity = 'medium'
+                return v_type, severity, kw
+    return None, None, None
+
+
+def log_violation(user, user_email, user_message, ai_response, violation_type, severity, ip, user_agent):
+    """Qoidabuzarlikni bazaga yozish va ChatBotAccess'ni yangilash"""
+    from django.utils import timezone
+
+    # Violation log yaratish
+    ChatViolation.objects.create(
+        user=user,
+        user_email=user_email,
+        user_message=user_message,
+        ai_response=ai_response,
+        violation_type=violation_type,
+        severity=severity,
+        ip_address=ip,
+        user_agent=user_agent,
+    )
+
+    # Foydalanuvchi mavjud bo'lsa, violation countni oshirish
+    if user:
+        access, created = ChatBotAccess.objects.get_or_create(
+            user=user,
+            defaults={
+                'violation_count': 1,
+                'last_violation_at': timezone.now(),
+            }
+        )
+        if not created:
+            access.violation_count += 1
+            access.last_violation_at = timezone.now()
+            access.save(update_fields=['violation_count', 'last_violation_at'])
+
+        # Auto-block: 5 ta qoidabuzarlikdan keyin avtomatik 24 soatlik blok
+        if access.violation_count >= 5 and access.block_type == 'none':
+            from datetime import timedelta
+            access.block_type = 'temporary'
+            access.blocked_until = timezone.now() + timedelta(hours=24)
+            access.block_reason = f'Avtomatik blok: {access.violation_count} ta qoidabuzarlik'
+            access.save()
+
+
 @csrf_exempt
 def ai_chat(request):
     """AI Chat proxy endpoint — calls OpenRouter API from server side"""
     import requests as req
     import json
     import logging
+    from django.core.cache import cache
+    from django.utils import timezone
 
     logger = logging.getLogger('django')
 
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
+
+    # --- Request size limit (max 50KB) ---
+    if len(request.body) > 51200:
+        return JsonResponse({'error': "So'rov hajmi juda katta."}, status=413)
+
+    # --- IP va User Agent olish ---
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR', '0.0.0.0')
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    # --- IP-based rate limiting (max 15 requests per minute) ---
+    rate_key = f'ai_chat_rate_{ip}'
+    ai_requests = cache.get(rate_key, 0)
+    if ai_requests >= 15:
+        logger.warning(f"[AI Chat] Rate limit exceeded for IP: {ip}")
+        return JsonResponse({'error': "Juda ko'p so'rov. 1 daqiqa kutib turing."}, status=429)
+    cache.set(rate_key, ai_requests + 1, 60)
+
+    # --- Foydalanuvchi aniqlash ---
+    current_user = request.user if request.user.is_authenticated else None
+    user_email = current_user.email if current_user else f'anonymous_{ip}'
+
+    # --- ChatBot blok tekshiruvi ---
+    if current_user:
+        try:
+            access = ChatBotAccess.objects.get(user=current_user)
+            if access.is_blocked():
+                remaining = access.get_remaining_time()
+                if access.block_type == 'permanent':
+                    msg = "🚫 Sizning chatbot'dan foydalanish huquqingiz bloklangan. Admin bilan bog'laning."
+                else:
+                    msg = f"⏳ Chatbot'dan foydalanish huquqingiz vaqtinchalik bloklangan. Qolgan vaqt: {remaining or 'noma`lum'}"
+                return JsonResponse({
+                    'status': 'blocked',
+                    'content': msg,
+                    'blocked': True,
+                    'block_type': access.block_type,
+                }, status=403)
+        except ChatBotAccess.DoesNotExist:
+            pass
 
     try:
         body = json.loads(request.body)
@@ -91,36 +223,106 @@ def ai_chat(request):
         if not messages:
             return JsonResponse({'error': 'No messages provided'}, status=400)
 
-        OPENROUTER_API_KEY = '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'
+        # --- Message count limit (max 20 messages in conversation) ---
+        if len(messages) > 20:
+            messages = messages[-20:]
+
+        # --- Oxirgi xabarni tekshirish (user so'rovi) ---
+        last_user_message = ''
+        for msg in reversed(messages):
+            if msg.get('role') == 'user':
+                last_user_message = msg.get('content', '')
+                break
+
+        # --- SERVER-SIDE VIOLATION CHECK ---
+        violation_type, severity, matched_keyword = detect_violation(last_user_message)
+        if violation_type:
+            refusal_msg = (
+                "⚠️ Kechirasiz, bu turdagi so'rovlarga javob bera olmayman. "
+                "Men faqat ta'lim sohasidagi savollarga javob beraman. "
+                "Iltimos, ta'limga oid savol bering!"
+            )
+
+            # Logga yozish
+            log_violation(
+                user=current_user,
+                user_email=user_email,
+                user_message=last_user_message,
+                ai_response=refusal_msg,
+                violation_type=violation_type,
+                severity=severity,
+                ip=ip,
+                user_agent=user_agent,
+            )
+
+            logger.warning(
+                f"[AI Chat] VIOLATION from {user_email} (IP: {ip}): "
+                f"type={violation_type}, keyword='{matched_keyword}', "
+                f"message='{last_user_message[:100]}'"
+            )
+
+            return JsonResponse({
+                'status': 'violation',
+                'content': refusal_msg,
+                'violation': True,
+            })
+
+        # --- Sanitize messages ---
+        sanitized_messages = []
+        for msg in messages:
+            role = msg.get('role', 'user')
+            content = msg.get('content', '')
+            if role not in ('user', 'assistant'):
+                role = 'user'
+            if not isinstance(content, str):
+                content = str(content)
+            content = content[:2000]
+            sanitized_messages.append({'role': role, 'content': content})
+
+        OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
+
+        if not OPENROUTER_API_KEY:
+            logger.error("[AI Chat] OPENROUTER_API_KEY is not set!")
+            return JsonResponse({
+                'status': 'error',
+                'content': 'AI xizmati vaqtincha mavjud emas.'
+            }, status=503)
 
         SYSTEM_PROMPT = (
-            "Sen EduShare AI — aqlli va do'stona yordamchi.\n\n"
+            "Sen EduShare AI — faqat ta'lim sohasida yordam beradigan yordamchi.\n\n"
+            "SEN FAQAT TA'LIM MAVZULARIGA JAVOB BERASAN. "
+            "Ta'limga oid bo'lmagan HAMMA so'rovlarni rad et.\n\n"
             "Agar foydalanuvchi salomlashsa (salom, hello, hi, assalomu alaykum va h.k.), "
             "do'stona javob ber va o'zingni tanishtir.\n\n"
-            "Sen quyidagi barcha mavzularda yordam bera olasan:\n"
+            "✅ Ruxsat etilgan mavzular (FAQAT ta'lim bilan bog'liq):\n"
             "- 📚 Ta'lim fanlari: matematika, fizika, kimyo, biologiya, tarix, geografiya, adabiyot\n"
-            "- 🌐 Tillar: ingliz tili, rus tili, o'zbek tili grammatikasi\n"
-            "- 💻 Texnologiya va IT: dasturlash, networking, kompyuter fanlari, AI\n"
-            "- 🎵 San'at va madaniyat: musiqa, rassomchilik, kino, adabiyot\n"
-            "- ⚽ Sport va sog'liq: sport turlari, jismoniy tarbiya, salomatlik\n"
+            "- 🌐 Tillar: ingliz tili, rus tili, o'zbek tili grammatikasi, tarjima\n"
+            "- 💻 Dasturlash va IT: Python, JavaScript, HTML/CSS, algoritm, ma'lumotlar tuzilmasi\n"
             "- 🔬 Fan va texnika: astronomiya, robototexnika, muhandislik\n"
-            "- 📊 Biznes va iqtisod: marketing, menejment, moliya asoslari\n"
-            "- 🌍 Umumiy bilim: geografiya, ekologiya, jamiyat\n\n"
-            "Sen FAQAT quyidagi mavzulardan BOSH TORTASAN:\n"
+            "- 📊 Iqtisod va biznes: marketing, menejment, moliya ASOSLARI\n"
+            "- 🌍 Umumiy bilim: geografiya, ekologiya, fan tarixi\n"
+            "- 📖 Kitob tavsiyalari va o'qish uchun maslahatlar\n\n"
+            "❌ QATTIYAN MAN ETILGAN mavzular (HAR DOIM rad et):\n"
             "- Zo'ravonlik, qurol-yarog', noqonuniy faoliyat\n"
             "- Kattalar uchun (18+) kontent\n"
+            "- Hacking, exploit, virus yozish\n"
             "- Haqorat, irqchilik, diskriminatsiya\n"
-            "- Shaxsiy ma'lumotlarni so'rash yoki tarqatish\n\n"
-            "Agar foydalanuvchi taqiqlangan mavzu haqida so'rasa, muloyimlik bilan rad et:\n"
-            "\"Kechirasiz, bu mavzuda yordam bera olmayman. "
-            "Boshqa savol bering!\"\n\n"
+            "- Shaxsiy ma'lumotlarni so'rash yoki tarqatish\n"
+            "- Narkotik moddalar, giyohvand moddalar\n"
+            "- Sport, hazil, musiqa, kino, o'yinlar, pishirish retseptlari, "
+            "sog'liq, psixologiya, munosabatlar — bular ta'lim emas\n"
+            "- Har qanday ta'limga aloqasi bo'lmagan mavzu\n\n"
+            "❌ Man etilgan so'rovga javob berganingda, doimo quyidagicha ayt:\n"
+            "\"⚠️ Kechirasiz, bu ta'lim mavzusiga oid emas. "
+            "Men faqat ta'lim sohasidagi savollarga javob beraman. "
+            "Iltimos, ta'limga oid savol bering!\"\n\n"
             "Javoblaringni o'zbek tilida, tushunarli va qisqa ber. "
             "Kerak bo'lsa misollar va tushuntirishlar qo'sh."
         )
 
-        api_messages = [{'role': 'system', 'content': SYSTEM_PROMPT}] + messages
+        api_messages = [{'role': 'system', 'content': SYSTEM_PROMPT}] + sanitized_messages
 
-        logger.info(f"[AI Chat] Sending request to OpenRouter with model openai/gpt-4.1-nano")
+        logger.info(f"[AI Chat] Request from {user_email} (IP: {ip}), messages: {len(sanitized_messages)}")
 
         response = req.post(
             'https://openrouter.ai/api/v1/chat/completions',
@@ -140,7 +342,6 @@ def ai_chat(request):
         )
 
         logger.info(f"[AI Chat] OpenRouter response status: {response.status_code}")
-        logger.info(f"[AI Chat] OpenRouter response body: {response.text[:500]}")
 
         data = response.json()
 
@@ -148,32 +349,55 @@ def ai_chat(request):
         if response.status_code != 200:
             error_msg = data.get('error', {})
             if isinstance(error_msg, dict):
-                error_msg = error_msg.get('message', str(error_msg))
+                error_msg = error_msg.get('message', 'Unknown error')
             logger.error(f"[AI Chat] OpenRouter API error: {error_msg}")
             return JsonResponse({
                 'status': 'error',
-                'content': f'AI xizmati xatosi: {error_msg}'
+                'content': 'AI xizmatida vaqtinchalik xatolik. Qayta urinib ko\'ring.'
             }, status=502)
 
         if 'choices' in data and data['choices']:
             content = data['choices'][0].get('message', {}).get('content', '')
+
+            # AI javobida ham "ta'limga oid emas" yoki rad etish borligini tekshirish
+            # Agar AI o'zi rad etgan bo'lsa, buni ham log qilish
+            refusal_indicators = [
+                'javob bera olmayman', 'rad etaman', 'ta\'limga oid emas',
+                'yordam bera olmayman', 'man etilgan',
+            ]
+            if any(indicator in content.lower() for indicator in refusal_indicators):
+                # AI o'zi rad etdi — violation sifatida log qilish
+                log_violation(
+                    user=current_user,
+                    user_email=user_email,
+                    user_message=last_user_message,
+                    ai_response=content,
+                    violation_type='off_topic',
+                    severity='low',
+                    ip=ip,
+                    user_agent=user_agent,
+                )
+                logger.info(
+                    f"[AI Chat] AI refused request from {user_email}: '{last_user_message[:80]}'"
+                )
+
             return JsonResponse({'status': 'success', 'content': content})
         else:
             logger.error(f"[AI Chat] No choices in response: {data}")
             return JsonResponse({
                 'status': 'error',
-                'content': f'AI javob bermadi. Response: {json.dumps(data)[:200]}'
+                'content': 'AI javob bermadi. Qayta urinib ko\'ring.'
             }, status=500)
 
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        return JsonResponse({'error': "Noto'g'ri so'rov formati."}, status=400)
     except req.exceptions.Timeout:
-        return JsonResponse({'error': 'AI server timeout'}, status=504)
+        return JsonResponse({'error': 'AI xizmati javob bermadi. Qayta urinib ko\'ring.'}, status=504)
     except req.exceptions.ConnectionError as e:
         logger.error(f"[AI Chat] Connection error: {str(e)}")
         return JsonResponse({
-            'error': f'OpenRouter ulanish xatosi: {str(e)[:200]}'
+            'error': 'AI xizmatiga ulanib bo\'lmadi.'
         }, status=502)
     except Exception as e:
         logger.error(f"[AI Chat] Unexpected error: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': 'Ichki xatolik yuz berdi.'}, status=500)

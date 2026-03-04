@@ -3,25 +3,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './AIChatBot.css';
 
-const REFUSAL_MESSAGE = '⚠️ Kechirasiz, bu turdagi so\'rovlarga javob bera olmayman. Iltimos, boshqa savol bering!';
+const REFUSAL_MESSAGE = '⚠️ Kechirasiz, bu ta\'limga oid emas. Men faqat ta\'lim sohasidagi savollarga javob beraman. Iltimos, ta\'limga oid savol bering!';
+const BLOCK_MESSAGE = '🚫 Sizning chatbot\'dan foydalanish huquqingiz bloklangan. Admin bilan bog\'laning.';
 
-// Client-side filter: ONLY block clearly harmful/inappropriate messages
-// All educational, sport, music, tech, networking topics are ALLOWED
+// Client-side filter: faqat ta'lim mavzulariga ruxsat
 const BLOCKED_KEYWORDS = [
-    // Harmful/dangerous content only
-    'hack', 'crack', 'virus', 'ddos', 'exploit',
-    'qurol', 'bomba', 'portlatish',
-    'pornograf', '18+', 'erotik',
+    // Hacking/Exploit
+    'hack', 'crack', 'virus', 'ddos', 'exploit', 'malware', 'trojan',
+    'ransomware', 'keylogger', 'backdoor', 'rootkit', 'phishing',
+    'reverse shell', 'metasploit', 'brute force',
+    'buzish', 'buzib kirish', 'parolni buzish', 'hujum yozib',
+    'hujum qilish', 'hujum kodi',
+    // Violence
+    'qurol', 'bomba', 'portlatish', "o'ldirish", "o'ldir",
+    'otish', 'pichoq', 'terroristik', 'terror', 'zaharla',
+    // Adult
+    'pornograf', '18+', 'erotik', 'seksual',
+    // Harmful
+    'narkotik', 'giyohvand', 'nasha', 'gashish', 'geroin', 'kokain',
+    'firibgarlik', 'pul yuvish', 'soxta hujjat',
+    // Harassment  
+    'irqchi', 'haqorat', 'kamsit', 'fashistik',
 ];
 
 function isEducationRelated(text) {
     const lower = text.toLowerCase();
-
-    // Only block if message contains clearly harmful keywords
     const hasBlocked = BLOCKED_KEYWORDS.some(kw => lower.includes(kw));
     if (hasBlocked) return false;
-
-    // Allow everything else — server-side AI prompt handles the rest
     return true;
 }
 
@@ -30,12 +38,13 @@ const AIChatBot = () => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: '👋 Salom! Men EduShare AI yordamchisiman. Sizga qanday yordam bera olaman?'
+            content: '👋 Salom! Men EduShare AI yordamchisiman. Sizga ta\'lim sohasida qanday yordam bera olaman?'
         }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
+    const [isBlocked, setIsBlocked] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const chatBodyRef = useRef(null);
@@ -57,7 +66,6 @@ const AIChatBot = () => {
         }
     }, [isOpen]);
 
-    // Chat body scroll — sahifaga scroll o'tmasin
     useEffect(() => {
         const chatBody = chatBodyRef.current;
         if (!chatBody) return;
@@ -72,7 +80,6 @@ const AIChatBot = () => {
         };
 
         const handleTouchMove = (e) => {
-            // touchmove inside chat body should not propagate
             e.stopPropagation();
         };
 
@@ -110,18 +117,27 @@ const AIChatBot = () => {
 
     const sendMessage = async () => {
         const trimmed = input.trim();
-        if (!trimmed || isLoading) return;
+        if (!trimmed || isLoading || isBlocked) return;
 
         const userMessage = { role: 'user', content: trimmed };
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
         setInput('');
 
-        // 🛡️ Client-side filter: block non-educational questions BEFORE API call
+        // 🛡️ Client-side filter
         if (!isEducationRelated(trimmed)) {
             const placeholderIndex = updatedMessages.length;
-            setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: '', type: 'violation' }]);
             await typeMessage(REFUSAL_MESSAGE, placeholderIndex);
+
+            // Serverga ham violation log qilish
+            try {
+                await apiClient.post(API_ENDPOINTS.AI_CHAT, {
+                    messages: [{ role: 'user', content: trimmed }],
+                });
+            } catch (_) {
+                // Server-side log bo'ldi, xato bo'lsa ham davom etamiz
+            }
             return;
         }
 
@@ -134,13 +150,32 @@ const AIChatBot = () => {
                 messages: apiMessages,
             });
 
+            if (response.data?.blocked) {
+                // Foydalanuvchi bloklangan
+                setIsBlocked(true);
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: response.data.content || BLOCK_MESSAGE,
+                    type: 'blocked'
+                }]);
+                setIsLoading(false);
+                return;
+            }
+
+            if (response.data?.violation) {
+                // Violation aniqlandi
+                const placeholderIndex = updatedMessages.length;
+                setMessages(prev => [...prev, { role: 'assistant', content: '', type: 'violation' }]);
+                setIsLoading(false);
+                await typeMessage(response.data.content || REFUSAL_MESSAGE, placeholderIndex);
+                return;
+            }
+
             if (response.data?.status === 'success' && response.data?.content) {
                 const aiContent = response.data.content;
-                // Add placeholder message
                 const placeholderIndex = updatedMessages.length;
                 setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
                 setIsLoading(false);
-                // Animate typing
                 await typeMessage(aiContent, placeholderIndex);
             } else {
                 setMessages(prev => [...prev, {
@@ -151,13 +186,26 @@ const AIChatBot = () => {
             }
         } catch (error) {
             console.error('AI Chat Error:', error);
+
+            // 403 — bloklangan foydalanuvchi
+            if (error.response?.status === 403 && error.response?.data?.blocked) {
+                setIsBlocked(true);
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: error.response.data.content || BLOCK_MESSAGE,
+                    type: 'blocked'
+                }]);
+                setIsLoading(false);
+                return;
+            }
+
             let errorMsg = '⚠️ Tarmoq xatoligi. Iltimos, qayta urinib ko\'ring.';
             if (error.response?.data) {
                 const serverError = error.response.data;
                 if (serverError.content) {
                     errorMsg = `⚠️ ${serverError.content}`;
                 } else if (serverError.error) {
-                    errorMsg = `⚠️ Server xatosi: ${serverError.error}`;
+                    errorMsg = `⚠️ ${serverError.error}`;
                 }
             }
             setMessages(prev => [...prev, {
@@ -176,17 +224,18 @@ const AIChatBot = () => {
     };
 
     const clearChat = () => {
+        setIsBlocked(false);
         setMessages([
             {
                 role: 'assistant',
-                content: '👋 Salom! Men EduShare AI yordamchisiman. Sizga qanday yordam bera olaman?'
+                content: '👋 Salom! Men EduShare AI yordamchisiman. Sizga ta\'lim sohasida qanday yordam bera olaman?'
             }
         ]);
     };
 
     return (
         <>
-            {/* Overlay backdrop — tashqariga bosanda chatni yopish */}
+            {/* Overlay backdrop */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -273,8 +322,8 @@ const AIChatBot = () => {
                                 <div className="ai-chat-header-info">
                                     <span className="ai-chat-title">EDUSHARE AI</span>
                                     <span className="ai-chat-status">
-                                        <span className="status-dot" />
-                                        ONLINE
+                                        <span className={`status-dot ${isBlocked ? 'blocked' : ''}`} />
+                                        {isBlocked ? 'BLOKLANGAN' : 'ONLINE'}
                                     </span>
                                 </div>
                             </div>
@@ -306,21 +355,34 @@ const AIChatBot = () => {
                             {messages.map((msg, idx) => (
                                 <motion.div
                                     key={idx}
-                                    className={`ai-chat-message ${msg.role}`}
+                                    className={`ai-chat-message ${msg.role} ${msg.type === 'violation' ? 'violation' : ''} ${msg.type === 'blocked' ? 'blocked' : ''}`}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3, delay: 0.05 }}
                                 >
                                     {msg.role === 'assistant' && (
-                                        <div className="ai-msg-avatar">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                                                <path d="M2 17l10 5 10-5" />
-                                                <path d="M2 12l10 5 10-5" />
-                                            </svg>
+                                        <div className={`ai-msg-avatar ${msg.type === 'violation' ? 'violation' : ''} ${msg.type === 'blocked' ? 'blocked' : ''}`}>
+                                            {msg.type === 'blocked' ? (
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                                                </svg>
+                                            ) : msg.type === 'violation' ? (
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                                    <line x1="12" y1="9" x2="12" y2="13" />
+                                                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                                                </svg>
+                                            ) : (
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                                    <path d="M2 17l10 5 10-5" />
+                                                    <path d="M2 12l10 5 10-5" />
+                                                </svg>
+                                            )}
                                         </div>
                                     )}
-                                    <div className="ai-msg-bubble">
+                                    <div className={`ai-msg-bubble ${msg.type === 'violation' ? 'violation' : ''} ${msg.type === 'blocked' ? 'blocked' : ''}`}>
                                         <p>{msg.content}</p>
                                     </div>
                                 </motion.div>
@@ -352,32 +414,42 @@ const AIChatBot = () => {
 
                         {/* Input */}
                         <div className="ai-chat-footer">
-                            <div className="ai-chat-input-wrapper">
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    placeholder="Savolingizni yozing..."
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    disabled={isLoading || isTyping}
-                                    className="ai-chat-input"
-                                    id="ai-chat-input"
-                                />
-                                <button
-                                    className={`ai-chat-send ${(input.trim() && !isLoading && !isTyping) ? 'active' : ''}`}
-                                    onClick={sendMessage}
-                                    disabled={!input.trim() || isLoading || isTyping}
-                                    id="ai-chat-send-btn"
-                                >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <line x1="22" y1="2" x2="11" y2="13" />
-                                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            {isBlocked ? (
+                                <div className="ai-chat-blocked-notice">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
                                     </svg>
-                                </button>
-                            </div>
+                                    <span>Chatbot bloklangan</span>
+                                </div>
+                            ) : (
+                                <div className="ai-chat-input-wrapper">
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        placeholder="Ta'limga oid savolingizni yozing..."
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        disabled={isLoading || isTyping}
+                                        className="ai-chat-input"
+                                        id="ai-chat-input"
+                                    />
+                                    <button
+                                        className={`ai-chat-send ${(input.trim() && !isLoading && !isTyping) ? 'active' : ''}`}
+                                        onClick={sendMessage}
+                                        disabled={!input.trim() || isLoading || isTyping}
+                                        id="ai-chat-send-btn"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <line x1="22" y1="2" x2="11" y2="13" />
+                                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
                             <span className="ai-chat-powered">
-                                POWERED BY GPT · EDUSHARE AI
+                                POWERED BY GPT · EDUSHARE AI · FAQAT TA'LIM
                             </span>
                         </div>
                     </motion.div>

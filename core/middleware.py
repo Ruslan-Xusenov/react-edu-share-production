@@ -71,11 +71,34 @@ class AdvancedSecurityMiddleware:
             '/__debug__/',
         ]
         
+    def _is_local_ip(self, ip_address):
+        """Check if IP is localhost or private network"""
+        local_ips = ['127.0.0.1', '::1', 'localhost', '0.0.0.0']
+        if ip_address in local_ips:
+            return True
+        # Private network ranges
+        if ip_address and (ip_address.startswith('10.') or 
+                          ip_address.startswith('192.168.') or
+                          ip_address.startswith('172.')):
+            return True
+        return False
+
     def __call__(self, request):
         if any(request.path.startswith(path) for path in self.exempt_paths):
             return self.get_response(request)
         
         ip_address = get_client_ip(request)
+        
+        # DEBUG rejimida lokal IP'larni bloklamaslik
+        from django.conf import settings
+        if settings.DEBUG and self._is_local_ip(ip_address):
+            response = self.get_response(request)
+            if hasattr(response, 'headers'):
+                response['X-Content-Type-Options'] = 'nosniff'
+                response['X-Frame-Options'] = 'DENY'
+                response['X-XSS-Protection'] = '1; mode=block'
+                response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            return response
         
         if self.is_ip_blocked(ip_address):
             safe_ip = escape(ip_address)
