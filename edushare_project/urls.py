@@ -41,7 +41,8 @@ urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 
-    re_path(r'^(?!api|admin|media|static|accounts|core|sitemap\.xml|robots\.txt).*$', TemplateView.as_view(template_name='index.html'), name='react-app'),
+    re_path(r'^(?!api|edushare-boshqaruv-2026|admin|media|static|accounts|core|profile|courses|sitemap\.xml|robots\.txt).*$', 
+           TemplateView.as_view(template_name='index.html'), name='react-app'),
     
 ]
 
