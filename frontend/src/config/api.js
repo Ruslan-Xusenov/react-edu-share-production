@@ -42,7 +42,7 @@ apiClient.interceptors.request.use(
         if (token && token !== 'session-active') {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        const csrfToken = getCookie('csrftoken');
+        const csrfToken = getCookie('edu_csrf');
         if (csrfToken) {
             config.headers['X-CSRFToken'] = csrfToken;
         }
