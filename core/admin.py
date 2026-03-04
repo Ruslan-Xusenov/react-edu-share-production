@@ -93,7 +93,6 @@ class IPBlocklistAdmin(admin.ModelAdmin):
 
 
 def _is_google_user(user):
-    """Foydalanuvchi Google orqali ro'yxatdan o'tganmi tekshirish"""
     try:
         from allauth.socialaccount.models import SocialAccount
         return SocialAccount.objects.filter(user=user, provider='google').exists()
@@ -102,7 +101,6 @@ def _is_google_user(user):
 
 
 def _send_block_notification(user, block_type, reason, blocked_until=None):
-    """Foydalanuvchiga blok haqida email xabar yuborish (faqat Google users uchun)"""
     if not _is_google_user(user):
         return False
 
@@ -252,7 +250,6 @@ class ChatViolationAdmin(admin.ModelAdmin):
     mark_reviewed.short_description = "✅ Ko'rilgan deb belgilash"
 
     def _block_user_chatbot(self, request, queryset, block_type, duration=None, duration_text=''):
-        """Foydalanuvchilarning chatbot huquqini bloklash"""
         blocked_count = 0
         email_sent_count = 0
 
@@ -289,7 +286,6 @@ class ChatViolationAdmin(admin.ModelAdmin):
             violation.action_taken = action_text
             violation.save()
 
-            # Email yuborish (faqat Google users)
             email_result = _send_block_notification(
                 violation.user, block_type, reason, blocked_until
             )

@@ -6,29 +6,29 @@ const SplashScreen = ({ onComplete }) => {
     const [fadeOut, setFadeOut] = useState(false);
     const [removed, setRemoved] = useState(false);
 
-    // Generate particles once
+    // Generate particles once (reduced for performance)
     const particles = useMemo(() => {
-        return Array.from({ length: 40 }, (_, i) => ({
+        return Array.from({ length: 15 }, (_, i) => ({
             id: i,
             left: `${Math.random() * 100}%`,
             size: `${1 + Math.random() * 3}px`,
-            duration: `${2 + Math.random() * 3}s`,
-            delay: `${Math.random() * 2}s`,
+            duration: `${2 + Math.random() * 2}s`,
+            delay: `${Math.random() * 1}s`,
             opacity: 0.3 + Math.random() * 0.7,
         }));
     }, []);
 
     useEffect(() => {
-        // Start fade out at 4 seconds
+        // Start fade out at 1.5 seconds
         const fadeTimer = setTimeout(() => {
             setFadeOut(true);
-        }, 4000);
+        }, 1500);
 
-        // Remove from DOM at 5 seconds
+        // Remove from DOM at 2.5 seconds
         const removeTimer = setTimeout(() => {
             setRemoved(true);
             if (onComplete) onComplete();
-        }, 5000);
+        }, 2500);
 
         return () => {
             clearTimeout(fadeTimer);

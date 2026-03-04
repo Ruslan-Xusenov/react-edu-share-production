@@ -13,19 +13,13 @@ from .forms import ProfileForm
 
 logger = logging.getLogger(__name__)
 
-# ================================================================
-# Input Validation Helpers
-# ================================================================
-
 def _validate_email(email):
-    """Email formatini tekshirish"""
     if not email or not isinstance(email, str):
         return False
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return bool(re.match(pattern, email)) and len(email) <= 254
 
 def _validate_password(password):
-    """Parol kuchliligini tekshirish"""
     if not password or not isinstance(password, str):
         return False, "Parol bo'sh bo'lishi mumkin emas."
     if len(password) < 8:
@@ -39,7 +33,6 @@ def _validate_password(password):
     return True, ""
 
 def _sanitize_text(text, max_length=500):
-    """Matnni sanitizatsiya qilish"""
     if not text or not isinstance(text, str):
         return ""
     text = text.strip()
@@ -47,20 +40,14 @@ def _sanitize_text(text, max_length=500):
     return text[:max_length]
 
 def _safe_json_parse(request):
-    """JSON bodyni xavfsiz parse qilish"""
     try:
         if not request.body:
             return None, "So'rov tanasi bo'sh."
-        if len(request.body) > 10240:  # 10KB max for JSON body
+        if len(request.body) > 10240:
             return None, "So'rov tanasi juda katta."
         return json.loads(request.body), None
     except json.JSONDecodeError:
         return None, "Noto'g'ri JSON format."
-
-
-# ================================================================
-# Template Views
-# ================================================================
 
 @login_required
 def profile(request):
@@ -86,12 +73,6 @@ def edit_profile(request):
         'form': form,
     }
     return render(request, 'accounts/edit_profile.html', context)
-
-
-# ================================================================
-# API Views — @csrf_exempt faqat SPA frontend uchun kerak
-# Shuning uchun session authentication + CORS himoyalaydi
-# ================================================================
 
 @csrf_exempt
 def api_profile(request):
@@ -169,7 +150,6 @@ def api_login(request):
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
         
-        # Input validation
         if not email or not password:
             return JsonResponse({'status': 'error', 'message': 'Email va parol kiritilishi shart.'}, status=400)
         
@@ -191,7 +171,6 @@ def api_login(request):
                 }
             })
         
-        # Login xatosi — hujumchiga qaysi field xato ekanini aytmaslik
         logger.warning(f"Failed login attempt for: {email} from IP: {_get_client_ip(request)}")
         return JsonResponse({'status': 'error', 'message': "Email yoki parol noto'g'ri."}, status=400)
     
@@ -213,16 +192,13 @@ def api_signup(request):
         password = data.get('password', '')
         full_name = _sanitize_text(data.get('full_name', ''), max_length=150)
         
-        # Email validation
         if not _validate_email(email):
             return JsonResponse({'status': 'error', 'message': "Noto'g'ri email format."}, status=400)
         
-        # Password validation
         is_valid, pwd_error = _validate_password(password)
         if not is_valid:
             return JsonResponse({'status': 'error', 'message': pwd_error}, status=400)
         
-        # Username generation (sanitized)
         username = data.get('username', '')
         if not username and email:
             username = re.sub(r'[^a-zA-Z0-9_]', '', email.split('@')[0])

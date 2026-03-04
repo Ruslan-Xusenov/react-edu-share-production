@@ -112,22 +112,31 @@ function App() {
     return HORIZONTAL_ROUTES.includes(location.pathname);
   }, [location.pathname]);
 
-  // Custom cursor
+  // Custom cursor — only on desktop (no touch)
   useEffect(() => {
+    // Skip on touch devices
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
+
     const cursor = document.querySelector('.custom-cursor');
     const follower = document.querySelector('.custom-cursor-follower');
+    if (!cursor || !follower) return;
 
+    let rafId;
     const moveCursor = (e) => {
-      if (cursor && follower) {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
         cursor.style.left = `${e.clientX}px`;
         cursor.style.top = `${e.clientY}px`;
         follower.style.left = `${e.clientX}px`;
         follower.style.top = `${e.clientY}px`;
-      }
+      });
     };
 
-    window.addEventListener('mousemove', moveCursor);
-    return () => window.removeEventListener('mousemove', moveCursor);
+    window.addEventListener('mousemove', moveCursor, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', moveCursor);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Horizontal scroll progress bar + wheel → horizontal scroll (only for horizontal routes)
@@ -135,17 +144,23 @@ function App() {
     const container = document.querySelector('.main-content');
     if (!container) return;
 
+    let ticking = false;
     const handleScroll = () => {
-      const progress = document.querySelector('.scroll-progress');
-      if (progress) {
-        if (isHorizontalRoute && window.innerWidth > 1024) {
-          const scrollPercent = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
-          progress.style.width = (scrollPercent || 0) + '%';
-        } else {
-          const scrollPercent = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
-          progress.style.width = (scrollPercent || 0) + '%';
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const progress = document.querySelector('.scroll-progress');
+        if (progress) {
+          if (isHorizontalRoute && window.innerWidth > 1024) {
+            const scrollPercent = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
+            progress.style.width = (scrollPercent || 0) + '%';
+          } else {
+            const scrollPercent = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
+            progress.style.width = (scrollPercent || 0) + '%';
+          }
         }
-      }
+        ticking = false;
+      });
     };
 
     // Convert vertical wheel to horizontal scroll (only for horizontal routes on desktop)
