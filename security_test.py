@@ -4,7 +4,7 @@ from colorama import Fore, Style, init
 
 init(autoreset=True)
 
-BASE_URL = "http://127.0.0.1:8000/"
+BASE_URL = "https://edushare.uz/"
 
 def print_test(name, status):
     if status:
