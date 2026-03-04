@@ -449,7 +449,7 @@ const AIChatBot = () => {
                                 </div>
                             )}
                             <span className="ai-chat-powered">
-                                POWERED BY GPT · EDUSHARE AI · FAQAT TA'LIM
+                                POWERED BY RUSLAN · EDUSHARE AI · FAQAT TA'LIM
                             </span>
                         </div>
                     </motion.div>

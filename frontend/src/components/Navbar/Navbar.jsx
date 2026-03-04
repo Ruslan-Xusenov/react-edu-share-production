@@ -71,7 +71,7 @@ const Navbar = () => {
     return (
         <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
             <Link to="/" className="navbar-logo">
-                EDUSHARE AI
+                EDUSHARE SCHOOL
             </Link>
 
             <div className={`navbar-nav ${isMobileOpen ? 'mobile-open' : ''}`}>
