@@ -211,11 +211,8 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         },
-        'APP': {
-            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
-            'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
-            'key': ''
-        }
+        # APP sozlamalari bu yerda emas — bazada saqlanadi
+        # (python manage.py setup_google_oauth orqali)
     }
 }
 
