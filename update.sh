@@ -93,6 +93,12 @@ else
     echo -e "${GREEN}[4/6] Backend o'zgarmagan — o'tkazildi${NC}"
 fi
 
+# 5.1 Google OAuth sozlash (har doim tekshiriladi)
+echo -e "${YELLOW}[4.5/6]${NC} Google OAuth SocialApp tekshirilmoqda..."
+source "$VENV"
+python manage.py setup_google_oauth 2>/dev/null || true
+echo -e "${GREEN}✓ Google OAuth sozlandi${NC}"
+
 # 6. Xizmatlarni qayta ishga tushirish
 echo -e "${YELLOW}[5/6]${NC} Gunicorn qayta ishga tushirilmoqda..."
 sudo systemctl restart edushare
