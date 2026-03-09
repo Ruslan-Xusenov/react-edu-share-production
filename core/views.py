@@ -309,7 +309,7 @@ def ai_chat(request):
                 'X-Title': 'EduShare AI',
             },
             json={
-                'model': 'nvidia/llama-nemotron-embed-vl-1b-v2:free',
+                'model': 'nvidia/llama-3.1-nemotron-70b-instruct:free',
                 'messages': api_messages,
                 'max_tokens': 1024,
                 'temperature': 0.7,
