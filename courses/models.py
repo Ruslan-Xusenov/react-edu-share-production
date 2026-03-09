@@ -335,14 +335,18 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 @receiver(post_save, sender=Lesson)
-def trigger_hls_conversion(sender, instance, created, **kwargs):
+def trigger_hls_conversion(sender, instance, created, update_fields, **kwargs):
     """
     Lesson video fayli yuklanganida HLS konvertatsiya qilish.
-    Faqat video_file bo'lganda va hls_status 'none' yoki 'error' bo'lganda.
+    Faqat yangi yaratilganda yoki video_file o'zgarganda ishlaydi.
     """
+    # Agar update_fields ko'rsatilgan bo'lsa va video_file u yerda bo'lmasa — o'tkazib yuborish
+    if update_fields is not None and 'video_file' not in update_fields:
+        return
+
     if instance.video_file and instance.hls_status in ('none', 'error'):
-        video_path = instance.video_file.path
         import os
+        video_path = instance.video_file.path
         if os.path.exists(video_path):
             from courses.hls_converter import convert_to_hls_async
             convert_to_hls_async(instance.id, video_path)
