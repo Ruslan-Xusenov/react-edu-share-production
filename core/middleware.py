@@ -97,28 +97,22 @@ class AdvancedSecurityMiddleware:
                 response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
             return response
         
-        if self.is_ip_blocked(ip_address):
-            safe_ip = escape(ip_address)
-            log_security_event(
-                'IP_BLOCKED', 
-                f'Blocked IP attempted access: {safe_ip} - Path: {request.path}',
-                'WARNING'
-            )
-            return self._forbidden_response('Siz bloklangansiz. VPN ishlatishingizning ham foydasi yo\'q!')
+        if self.is_ip_blocked(ip_address) or request.COOKIES.get('edu_persistent_block'):
+            # Re-set cookie if it's an IP block but cookie is missing
+            response = self._forbidden_response('Siz bloklangansiz. VPN ishlatishingizning ham foydasi yo\'q!', ip_address)
+            if not request.COOKIES.get('edu_persistent_block'):
+                response.set_cookie('edu_persistent_block', '1', max_age=3600*24*30, httponly=True, samesite='Lax')
+            return response
         
-        # VPN/Proxy Detection
+        # Stricter VPN/Proxy Detection
         if self._is_using_vpn_proxy(request):
             log_security_event(
                 'VPN_PROXY_DETECTED',
                 f'VPN/Proxy detected from {ip_address} - Path: {request.path}',
-                'INFO'
+                'WARNING'
             )
-            # You can decide to block OR just log. For now, we block if they are on a sensitive path.
-            sensitive_paths = ['/accounts/login/', '/accounts/signup/']
-            if any(request.path.startswith(p) for p in sensitive_paths):
-                 # Optional: Un-comment to strictly block ALL VPNs on sensitive pages
-                 # return self._forbidden_response('VPN orqali kirish taqiqlangan!')
-                 pass
+            # Block VPN access strictly if detected
+            return self._forbidden_response('VPN orqali kirish taqiqlangan! Xavfsizlikni ta\'minlash uchun haqiqiy IP orqali kiring.', ip_address)
         
         if self._check_sql_injection_attempt(request):
             log_security_event(
@@ -239,19 +233,64 @@ class AdvancedSecurityMiddleware:
         
         return False
     
-    def _forbidden_response(self, message):
+    def _forbidden_response(self, message, ip_address=None):
         safe_message = escape(message)
-        return HttpResponseForbidden(
-            '<html><head><meta charset="utf-8"><style>body{background:#030308;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;} h1{color:#ff4444;font-size:40px;margin-bottom:10px;} .btn-red{background:#ff4444;color:#fff;border:none;padding:12px 25px;border-radius:8px;font-weight:600;margin-top:20px;text-decoration:none;display:inline-block;}</style></head><body>'
-            '<h1>Siz bloklangansiz!</h1>'
-            f'<p>{safe_message}</p>'
-            '<p style="background:rgba(255,68,68,0.1);padding:15px;border:1px solid rgba(255,68,68,0.3);border-radius:10px;margin-top:20px;max-width:500px;">'
-            'VPN ishlatishingizni ham foydasi yo\'q. Biz nafaqat IP-manzilingizni, balki qurilmangiz va identifikatoringizni ham bloklaganmiz.'
-            '</p>'
-            '<p><small style="color:rgba(255,255,255,0.4)">Xavfsizlik tizimi sizning harakatingizda xavf sezdi.</small></p>'
-            '</body></html>',
-            content_type='text/html; charset=utf-8'
-        )
+        remaining_seconds = 0
+        
+        # Calculate remaining time if blocked in DB
+        if ip_address:
+            try:
+                block = IPBlocklist.objects.filter(ip_address=ip_address).first()
+                if block and block.blocked_until:
+                    remaining = (block.blocked_until - timezone.now()).total_seconds()
+                    remaining_seconds = int(max(0, remaining))
+            except:
+                pass
+
+        html = f'''
+        <html><head><meta charset="utf-8">
+        <style>
+            body{{background:#030308;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;margin:0;}}
+            .card{{background:rgba(255,255,255,0.05);padding:40px;border-radius:24px;border:1px solid rgba(255,44,44,0.3);max-width:500px;backdrop-filter:blur(10px);}}
+            h1{{color:#ff4444;font-size:32px;margin-bottom:15px;}}
+            .timer{{font-size:48px;font-weight:700;margin:20px 0;color:#ff4444;font-family:monospace;}}
+            .msg{{color:rgba(255,255,255,0.8);line-height:1.6;}}
+            .vpn-msg{{background:rgba(255,68,68,0.15);padding:15px;border-radius:12px;margin:20px 0;font-weight:600;font-size:14px;border:1px solid rgba(255,68,68,0.3);}}
+        </style>
+        </head><body>
+            <div class="card">
+                <h1>🛑 Kirish taqiqlangan!</h1>
+                <p class="msg">{safe_message}</p>
+                
+                <div class="vpn-msg">VPN ishlatish orqali blokni chetlab o'ta olmaysiz. Qurilmangiz identifikatoriga binoan bloklangansiz.</div>
+                
+                <div id="countdown-label">Blokdan chiqishga qoldi:</div>
+                <div id="timer" class="timer">00:00:00</div>
+                
+                <p><small style="color:rgba(255,255,255,0.4)">IP: {ip_address or '---'}</small></p>
+            </div>
+            
+            <script>
+                let seconds = {remaining_seconds or 3600};
+                function updateTimer() {{
+                    if (seconds <= 0) {{
+                        document.getElementById('timer').innerHTML = "Qayta yuklang";
+                        return;
+                    }}
+                    let h = Math.floor(seconds / 3600);
+                    let m = Math.floor((seconds % 3600) / 60);
+                    let s = seconds % 60;
+                    document.getElementById('timer').innerHTML = 
+                        (h < 10 ? '0'+h : h) + ":" + (m < 10 ? '0'+m : m) + ":" + (s < 10 ? '0'+s : s);
+                    seconds--;
+                    setTimeout(updateTimer, 1000);
+                }}
+                updateTimer();
+            </script>
+        </body></html>
+        '''
+        response = HttpResponseForbidden(html, content_type='text/html; charset=utf-8')
+        return response
     
     def is_ip_blocked(self, ip_address):
         if not ip_address or ip_address == '0.0.0.0':
