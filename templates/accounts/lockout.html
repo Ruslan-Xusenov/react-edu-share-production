@@ -1,0 +1,67 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Account Locked" %}{% endblock %}
+
+{% block content %}
+<style>
+    .lockout-container {
+        max-width: 500px;
+        margin: 100px auto;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .lockout-icon {
+        font-size: 60px;
+        color: #ff4444;
+        margin-bottom: 20px;
+    }
+
+    .lockout-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #fff;
+    }
+
+    .lockout-message {
+        font-size: 16px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 30px;
+    }
+
+    .vpn-warning {
+        background: rgba(255, 68, 68, 0.1);
+        border: 1px solid rgba(255, 68, 68, 0.3);
+        padding: 15px;
+        border-radius: 10px;
+        color: #ff4444;
+        font-weight: 600;
+        font-size: 14px;
+    }
+</style>
+
+<div class="lockout-container">
+    <div class="lockout-icon">
+        <i class="fas fa-user-lock"></i>
+    </div>
+    <h1 class="lockout-title">Siz bloklangansiz!</h1>
+    <p class="lockout-message">
+        Xavfsizlik tizimi sizning harakatlaringizda xavf sezgani sababli hisobingiz vaqtincha bloklandi.
+    </p>
+    <div class="vpn-warning">
+        VPN ishlatishingizning ham foydasi yo'q. Biz nafaqat IP-manzilingizni, balki qurilmangiz va hisobingizni ham
+        bloklaganmiz.
+    </div>
+    <p style="margin-top: 30px; font-size: 14px; color: rgba(255,255,255,0.5);">
+        Agar bu xato ekanligiga ishonsangiz, qo'llab-quvvatlash xizmatiga murojaat qiling.
+    </p>
+</div>
+{% endblock %}

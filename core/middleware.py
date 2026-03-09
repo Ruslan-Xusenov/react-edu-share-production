@@ -104,7 +104,21 @@ class AdvancedSecurityMiddleware:
                 f'Blocked IP attempted access: {safe_ip} - Path: {request.path}',
                 'WARNING'
             )
-            return self._forbidden_response(f'IP bloklangan: {safe_ip}')
+            return self._forbidden_response('Siz bloklangansiz. VPN ishlatishingizning ham foydasi yo\'q!')
+        
+        # VPN/Proxy Detection
+        if self._is_using_vpn_proxy(request):
+            log_security_event(
+                'VPN_PROXY_DETECTED',
+                f'VPN/Proxy detected from {ip_address} - Path: {request.path}',
+                'INFO'
+            )
+            # You can decide to block OR just log. For now, we block if they are on a sensitive path.
+            sensitive_paths = ['/accounts/login/', '/accounts/signup/']
+            if any(request.path.startswith(p) for p in sensitive_paths):
+                 # Optional: Un-comment to strictly block ALL VPNs on sensitive pages
+                 # return self._forbidden_response('VPN orqali kirish taqiqlangan!')
+                 pass
         
         if self._check_sql_injection_attempt(request):
             log_security_event(
@@ -142,7 +156,7 @@ class AdvancedSecurityMiddleware:
         if not self.check_rate_limit(ip_address, request.path):
             self.log_suspicious_activity(ip_address, request, 'rate_limit_exceeded')
             return HttpResponse(
-                '<html><head><meta charset="utf-8"></head><body>'
+                '<html><head><meta charset="utf-8"><style>body{background:#030308;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;} h1{color:#ff4444;} p{color:rgba(255,255,255,0.7);}</style></head><body>'
                 '<h1>429 Too Many Requests</h1>'
                 '<p>Juda ko\'p so\'rov yuborildi. Iltimos, biroz kutib turing.</p>'
                 '<p><small>1 daqiqa kutib, qaytadan urinib ko\'ring.</small></p>'
@@ -163,6 +177,31 @@ class AdvancedSecurityMiddleware:
         response['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         
         return response
+    
+    def _is_using_vpn_proxy(self, request):
+        """Detect common VPN/Proxy headers"""
+        vpn_headers = [
+            'HTTP_VIA',
+            'HTTP_X_PROXY_ID',
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_FORWARDED',
+            'HTTP_X_FORWARDED',
+            'HTTP_PROXY_CONNECTION'
+        ]
+        
+        # Note: X_FORWARDED_FOR can be legitimate (Nginx), 
+        # but if it has multiple hops, it's often a proxy.
+        xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
+        if ',' in xff:
+            return True
+            
+        for h in vpn_headers:
+            if request.META.get(h):
+                # Don't flag single hop XFF as VPN if we know about the proxy
+                if h == 'HTTP_X_FORWARDED_FOR' and not ',' in request.META.get(h):
+                    continue
+                return True
+        return False
     
     def _check_sql_injection_attempt(self, request):
         query_string = request.META.get('QUERY_STRING', '')
@@ -203,10 +242,13 @@ class AdvancedSecurityMiddleware:
     def _forbidden_response(self, message):
         safe_message = escape(message)
         return HttpResponseForbidden(
-            '<html><head><meta charset="utf-8"></head><body>'
-            '<h1>403 Forbidden</h1>'
+            '<html><head><meta charset="utf-8"><style>body{background:#030308;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;} h1{color:#ff4444;font-size:40px;margin-bottom:10px;} .btn-red{background:#ff4444;color:#fff;border:none;padding:12px 25px;border-radius:8px;font-weight:600;margin-top:20px;text-decoration:none;display:inline-block;}</style></head><body>'
+            '<h1>Siz bloklangansiz!</h1>'
             f'<p>{safe_message}</p>'
-            '<p><small>Xavfsizlik sabablariga ko\'ra so\'rovingiz rad etildi.</small></p>'
+            '<p style="background:rgba(255,68,68,0.1);padding:15px;border:1px solid rgba(255,68,68,0.3);border-radius:10px;margin-top:20px;max-width:500px;">'
+            'VPN ishlatishingizni ham foydasi yo\'q. Biz nafaqat IP-manzilingizni, balki qurilmangiz va identifikatoringizni ham bloklaganmiz.'
+            '</p>'
+            '<p><small style="color:rgba(255,255,255,0.4)">Xavfsizlik tizimi sizning harakatingizda xavf sezdi.</small></p>'
             '</body></html>',
             content_type='text/html; charset=utf-8'
         )
@@ -239,13 +281,13 @@ class AdvancedSecurityMiddleware:
         is_api = path.startswith('/api/')
         
         if is_sensitive:
-            max_requests = 10
+            max_requests = 100  # 10 orni-ga 100 (yumshatildi)
             window = 60
         elif is_api:
-            max_requests = 50
+            max_requests = 150 # 50 orni-ga 150
             window = 60
         else:
-            max_requests = 120
+            max_requests = 300 # 120 orni-ga 300
             window = 60
         
         if requests >= max_requests:
@@ -299,7 +341,7 @@ class AdvancedSecurityMiddleware:
                 block.attempt_count += 1
                 block.last_attempt = timezone.now()
                 
-                if block.attempt_count >= 3:
+                if block.attempt_count >= 10: # 3 orni-ga 10 (yumshatildi)
                     block.is_permanent = True
                     block.reason = 'ddos'
                     block.description = 'Avtomatik doimiy blok - DDoS hujum belgisi'

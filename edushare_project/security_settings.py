@@ -63,12 +63,12 @@ CONTENT_SECURITY_POLICY = {
 }
 
 # Advanced Axes Configuration - Brute Force himoyasi
-AXES_FAILURE_LIMIT = 3  # 3 marta noto'g'ri urinishdan keyin bloklash
+AXES_FAILURE_LIMIT = 10  # 10 marta noto'g'ri urinishdan keyin bloklash (3 o'rniga)
 AXES_COOLOFF_TIME = 2  # 2 soat bloklash
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'
 AXES_HANDLER = 'axes.handlers.database.AxesDatabaseHandler'
-AXES_LOCKOUT_PARAMETERS = ['ip_address']
+AXES_LOCKOUT_PARAMETERS = [['ip_address', 'username']] # IP va Username bo'yicha bloklash (VPN yordam bermaydi)
 AXES_BEHIND_REVERSE_PROXY = True
 AXES_IP_GETTER = 'core.security_utils.get_client_ip'
 AXES_ONLY_ADMIN_SITE = False  # Butun saytni himoyalash
