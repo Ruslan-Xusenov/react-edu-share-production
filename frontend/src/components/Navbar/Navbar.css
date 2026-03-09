@@ -110,11 +110,10 @@
     border-color: var(--accent-cyan);
 }
 
-/* Dropdown styling */
 .dropdown-menu {
     position: absolute;
     right: 0;
-    top: calc(100% + 2rem);
+    top: calc(100% + 0.5rem);
     width: 260px;
     background: #000;
     border: 1px solid var(--border);
