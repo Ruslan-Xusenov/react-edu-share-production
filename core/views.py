@@ -309,11 +309,11 @@ def ai_chat(request):
                 'X-Title': 'EduShare AI',
             },
             json={
-                'model': 'meta-llama/llama-3.1-8b-instruct:free',
+                'model': 'openrouter/free',
                 'messages': api_messages,
-                'temperature': 0.5,
+                'temperature': 0.7,
                 'max_tokens': 1024,
-                'top_p': 1,
+                'reasoning': {'enabled': True},
             },
             timeout=30,
         )
