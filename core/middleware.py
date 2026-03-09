@@ -105,7 +105,6 @@ class AdvancedSecurityMiddleware:
         
         block_expiry = None
         if is_blocked:
-            # IP bloklangan bo'lsa, DB-dan vaqtni olamiz
             block = IPBlocklist.objects.filter(ip_address=ip_address).first()
             if block and block.blocked_until:
                 block_expiry = block.blocked_until
