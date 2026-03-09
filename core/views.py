@@ -322,13 +322,25 @@ def ai_chat(request):
         data = response.json()
 
         if response.status_code != 200:
-            error_msg = data.get('error', {})
+            error_data = {}
+            try:
+                error_data = response.json()
+            except:
+                pass
+            
+            error_msg = error_data.get('error', {})
             if isinstance(error_msg, dict):
                 error_msg = error_msg.get('message', 'Unknown error')
-            logger.error(f"[AI Chat] OpenRouter API error: {error_msg}")
+            
+            logger.error(f"[AI Chat] OpenRouter API error ({response.status_code}): {error_msg}")
+            
+            # Agar API key xato bo'lsa, aniqroq aytsin
+            if response.status_code == 401:
+                return JsonResponse({'status': 'error', 'content': 'AI xizmati autentifikatsiyasi xato (API Key).'}, status=502)
+                
             return JsonResponse({
-                'status': 'error',
-                'content': 'AI xizmatida vaqtinchalik xatolik. Qayta urinib ko\'ring.'
+                'status': 'error', 
+                'content': f'AI xizmatida xatolik ({response.status_code}). Qayta urinib ko\'ring.'
             }, status=502)
 
         if 'choices' in data and data['choices']:
