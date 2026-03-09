@@ -305,14 +305,15 @@ def ai_chat(request):
             headers={
                 'Authorization': f'Bearer {OPENROUTER_API_KEY}',
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://edushare.uz',
+                'HTTP-Referer': 'https://edushare.uz', # Majburiy
                 'X-Title': 'EduShare AI',
             },
             json={
-                'model': 'google/gemini-2.0-flash-exp:free',
+                'model': 'meta-llama/llama-3.1-8b-instruct:free',
                 'messages': api_messages,
+                'temperature': 0.5,
                 'max_tokens': 1024,
-                'temperature': 0.7,
+                'top_p': 1,
             },
             timeout=30,
         )
