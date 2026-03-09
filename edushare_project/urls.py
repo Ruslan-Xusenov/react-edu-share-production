@@ -28,21 +28,22 @@ def serve_react(request, path=''):
 urlpatterns = [
     path(os.getenv('ADMIN_URL', 'admin/'), admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('courses/', include('courses.urls')),
-    path('profile/', include('accounts.urls')),
     
     path('api/', include('courses.api_urls')),
     path('api/accounts/', include('accounts.urls')),
     path('api/ai-chat/', __import__('core.views', fromlist=['ai_chat']).ai_chat, name='ai-chat'),
     path('api-auth/', include('rest_framework.urls')),
 
-    path('core/', include('core.urls')),
-
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 
-    re_path(r'^(?!api|edushare-boshqaruv-2026|admin|media|static|accounts|core|profile|courses|sitemap\.xml|robots\.txt).*$', 
+    re_path(r'^(?!api|edushare-boshqaruv-2026|admin|media|static|accounts|sitemap\.xml|robots\.txt).*$', 
            TemplateView.as_view(template_name='index.html'), name='react-app'),
+
+    # 📁 Legacy Django Views (Faqat 'reverse' ishlashi uchun qoldirildi)
+    path('courses/', include('courses.urls')),
+    path('profile/', include('accounts.urls')),
+    path('core/', include('core.urls')),
     
 ]
 

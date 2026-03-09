@@ -1,28 +1,20 @@
-#!/bin/bash
-
-# EduShare Production Deployment Script
-# Bu scriptni root yoki sudo bilan ishga tushiring
-
-set -e  # Exit on error
+set -e
 
 echo "========================================="
 echo "  EduShare Production Deployment"
 echo "========================================="
 
-# Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Configuration
 PROJECT_NAME="edushare"
 PROJECT_DIR="/home/react-edu-share-production"
 VENV_DIR="$PROJECT_DIR/venv"
 USER="www-data"
 GROUP="www-data"
 
-# Functions
 print_status() {
     echo -e "${GREEN}✓${NC} $1"
 }
@@ -35,14 +27,12 @@ print_error() {
     echo -e "${RED}✗${NC} $1"
 }
 
-# 1. System Update
 echo ""
 echo "1. Updating system packages..."
 apt-get update
 apt-get upgrade -y
 print_status "System updated"
 
-# 2. Install required packages
 echo ""
 echo "2. Installing required packages..."
 apt-get install -y \
@@ -59,7 +49,6 @@ apt-get install -y \
     python3-certbot-nginx
 print_status "Packages installed"
 
-# 3. Setup PostgreSQL
 echo ""
 echo "3. Setting up PostgreSQL..."
 sudo -u postgres psql << EOF
@@ -73,7 +62,6 @@ GRANT ALL PRIVILEGES ON DATABASE edushare_db TO edushare_user;
 EOF
 print_status "PostgreSQL configured"
 
-# 4. Setup directories
 echo ""
 echo "4. Creating directories..."
 mkdir -p /var/log/edushare
@@ -83,7 +71,6 @@ mkdir -p $PROJECT_DIR/staticfiles
 mkdir -p $PROJECT_DIR/media
 print_status "Directories created"
 
-# 5. Setup virtual environment
 echo ""
 echo "5. Setting up virtual environment..."
 cd $PROJECT_DIR
@@ -94,11 +81,9 @@ pip install -r requirements.txt
 pip install gunicorn psycopg2-binary django-redis
 print_status "Virtual environment ready"
 
-# 6. Frontend build
 echo ""
 echo "6. Building frontend..."
 cd $PROJECT_DIR/frontend
-# Install npm if not present (deploy.sh handles this usually, but let's be safe)
 if ! command -v npm &> /dev/null; then
     apt-get install -y nodejs npm
 fi
@@ -106,7 +91,6 @@ npm install --legacy-peer-deps
 npm run build
 print_status "Frontend built"
 
-# 7. Django setup
 echo ""
 echo "7. Django setup..."
 cd $PROJECT_DIR
@@ -114,7 +98,6 @@ python manage.py collectstatic --noinput --settings=edushare_project.settings_pr
 python manage.py migrate --settings=edushare_project.settings_production
 print_status "Django configured"
 
-# 8. Set permissions
 echo ""
 echo "8. Setting permissions..."
 chown -R $USER:$GROUP $PROJECT_DIR
@@ -123,7 +106,6 @@ chown -R $USER:$GROUP /var/log/edushare
 chown -R $USER:$GROUP /var/run/edushare
 print_status "Permissions set"
 
-# 9. Setup Systemd service
 echo ""
 echo "9. Setting up systemd service..."
 cp $PROJECT_DIR/edushare.service /etc/systemd/system/
@@ -132,7 +114,6 @@ systemctl enable edushare
 systemctl start edushare
 print_status "Systemd service configured"
 
-# 10. Setup Nginx
 echo ""
 echo "10. Setting up Nginx..."
 cp $PROJECT_DIR/nginx_config.conf /etc/nginx/sites-available/edushare
@@ -143,19 +124,15 @@ systemctl restart nginx
 systemctl enable nginx
 print_status "Nginx configured"
 
-# 11. Setup SSL with Let's Encrypt
 echo ""
 echo "11. Setting up SSL certificate..."
 print_warning "Make sure your domain points to this server!"
-# read -p "Enter your domain (e.g., yourdomain.com): " DOMAIN
-# read -p "Enter your email: " EMAIL
 DOMAIN="edushare.uz"
 EMAIL="admin@edushare.uz"
 
 certbot --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos -m $EMAIL
 print_status "SSL certificate installed"
 
-# 12. Setup firewall
 echo ""
 echo "12. Configuring firewall..."
 ufw allow 22/tcp
@@ -164,20 +141,17 @@ ufw allow 443/tcp
 ufw --force enable
 print_status "Firewall configured"
 
-# 13. Setup automatic SSL renewal
 echo ""
 echo "13. Setting up automatic SSL renewal..."
 (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet --post-hook 'systemctl reload nginx'") | crontab -
 print_status "SSL auto-renewal configured"
 
-# 14. Setup Redis
 echo ""
 echo "14. Configuring Redis..."
 systemctl enable redis-server
 systemctl start redis-server
 print_status "Redis configured"
 
-# 15. Create superuser
 echo ""
 echo "15. Creating Django superuser..."
 print_warning "Enter superuser credentials:"
@@ -185,7 +159,6 @@ cd $PROJECT_DIR
 source venv/bin/activate
 python manage.py createsuperuser --settings=edushare_project.settings_production
 
-# Final status
 echo ""
 echo "========================================="
 echo -e "${GREEN}  Deployment Complete!${NC}"
