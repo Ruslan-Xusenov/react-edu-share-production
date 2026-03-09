@@ -11,7 +11,7 @@ export const BACKEND_URL = DOMAIN;
 // Create axios instance
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 60000,
+    timeout: 30000,   // 30s — upload requests use separate config
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
@@ -84,19 +84,17 @@ export const API_ENDPOINTS = {
     LEADERBOARD: '/accounts/leaderboard/',
     CATEGORIES: '/categories/',
     SUBCATEGORIES: '/subcategories/',
-    COURSES: '/lessons/',
-    COURSE_DETAIL: (id) => `/lessons/${id}/`,
-    COURSE_ENROLL: (id) => `/lessons/${id}/enroll/`,
+    // Lessons (canonical)
     LESSONS: '/lessons/',
     LESSON_DETAIL: (id) => `/lessons/${id}/`,
     LESSON_ENROLLED: '/lessons/enrolled/',
     LESSON_SAVED: '/lessons/saved/',
-    LESSON_COMPLETE: (id) => `/lessons/${id}/complete/`,
     LESSON_UPDATE_PROGRESS: (id) => `/lessons/${id}/update_progress/`,
     LESSON_COMMENTS: (id) => `/lessons/${id}/comments/`,
     LESSON_ADD_COMMENT: (id) => `/lessons/${id}/add_comment/`,
     LESSON_LIKE: (id) => `/lessons/${id}/like/`,
     LESSON_SAVE: (id) => `/lessons/${id}/save_lesson/`,
+    LESSON_ENROLL: (id) => `/lessons/${id}/enroll/`,
     ASSIGNMENTS: '/assignments/',
     ASSIGNMENT_SUBMIT: (id) => `/assignments/${id}/submit/`,
     REVIEWS: '/reviews/',
@@ -111,4 +109,9 @@ export const API_ENDPOINTS = {
     LESSON_QUIZ: (id) => `/lessons/${id}/quiz/`,
     LESSON_QUIZ_SUBMIT: (id) => `/lessons/${id}/submit_quiz/`,
     AI_CHAT: '/ai-chat/',
+    TEAM: '/team/',
+    // ── Email OTP parol almashtirish ──────────────────────────
+    REQUEST_PASSWORD_CHANGE: '/accounts/request-password-change/',
+    VERIFY_PASSWORD_OTP: '/accounts/verify-password-otp/',
+    RESEND_PASSWORD_OTP: '/accounts/resend-password-otp/',
 };

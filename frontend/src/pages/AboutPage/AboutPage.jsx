@@ -12,27 +12,31 @@ import './AboutPage.css';
 
 const AboutPage = () => {
     const [stats, setStats] = useState({
-        students: 2500,
-        courses: 120,
-        lessons: 450,
         certificates: 85
     });
+    const [team, setTeam] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchData = async () => {
             try {
-                const res = await apiClient.get(API_ENDPOINTS.STATS);
-                if (res.data.status === 'success') {
-                    setStats(res.data.stats);
+                const [statsRes, teamRes] = await Promise.all([
+                    apiClient.get(API_ENDPOINTS.STATS),
+                    apiClient.get(API_ENDPOINTS.TEAM)
+                ]);
+                if (statsRes.data.status === 'success') {
+                    setStats(statsRes.data.stats);
+                }
+                if (teamRes.data.status === 'success') {
+                    setTeam(teamRes.data.team);
                 }
             } catch (error) {
-                console.error("Error fetching about stats:", error);
+                console.error("Error fetching about data:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchStats();
+        fetchData();
     }, []);
 
     const values = [
@@ -40,12 +44,6 @@ const AboutPage = () => {
         { icon: <FaLightbulb />, title: 'INNOVATE', description: 'Leveraging AI and decentralization.' },
         { icon: <FaHandshake />, title: 'SYNERGY', description: 'Collaborative collective intelligence.' },
         { icon: <FaGlobe />, title: 'GLOBAL', description: 'Knowledge without borders.' }
-    ];
-
-    const team = [
-        { name: 'Ruslan Xusenov', role: 'CORE ARCHITECT', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop', bio: 'Founder of the EduShare engine.' },
-        { name: 'Amir Karimov', role: 'SYSTEMS LEAD', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop', bio: 'Specialist in scalable knowledge systems.' },
-        { name: 'Dilnoza Rahimova', role: 'COMMUNITY NODE', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&fit=crop', bio: 'Growing the decentralized learner network.' }
     ];
 
     const teamScrollRef = useRef(null);
@@ -73,7 +71,7 @@ const AboutPage = () => {
         }
 
         return () => clearInterval(scrollInterval);
-    }, []);
+    }, [team]);
 
     return (
         <div className="about-page">
@@ -134,20 +132,27 @@ const AboutPage = () => {
                 </div>
             </section>
 
-            <section className="team-section">
-                <div className="team-grid" ref={teamScrollRef}>
-                    {team.map((m, i) => (
-                        <div key={i} className="team-card">
-                            <div className="team-image"><img src={m.image} alt={m.name} /></div>
-                            <div className="team-content">
-                                <h3>{m.name}</h3>
-                                <div className="team-role">{m.role}</div>
-                                <p>{m.bio}</p>
+            {team.length > 0 && (
+                <section className="team-section">
+                    <div className="team-grid" ref={teamScrollRef}>
+                        {team.map((m, i) => (
+                            <div key={i} className="team-card">
+                                <div className="team-image">
+                                    <img
+                                        src={m.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop'}
+                                        alt={m.name}
+                                    />
+                                </div>
+                                <div className="team-content">
+                                    <h3>{m.name}</h3>
+                                    <div className="team-role">{m.role}</div>
+                                    <p>{m.bio}</p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+                        ))}
+                    </div>
+                </section>
+            )}
             <section className="about-cta">
                 <div className="cta-content" style={{ textAlign: 'center' }}>
                     <h2>JOIN THE <br /> <span className="cta-highlight">COLLECTIVE.</span></h2>

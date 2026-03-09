@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
     FaUser, FaEnvelope, FaTrophy, FaCertificate,
-    FaHeart, FaEdit, FaCamera, FaGithub, FaGlobe, FaTwitter, FaBookOpen
+    FaHeart, FaEdit, FaCamera, FaGithub, FaGlobe, FaTwitter, FaBookOpen,
+    FaLock, FaShieldAlt, FaCheckCircle, FaKey, FaPaperPlane, FaRedo
 } from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './ProfilePage.css';
@@ -25,8 +26,157 @@ const ProfilePage = () => {
     // Form states
     const [editMode, setEditMode] = useState(false);
     const [formData, setFormData] = useState({});
-    const [passwordData, setPasswordData] = useState({ old_password: '', new_password: '', confirm_password: '' });
     const [updateStatus, setUpdateStatus] = useState({ type: '', message: '' });
+
+    // ── OTP Password Change State ─────────────────────────────────────────
+    // step: 'form' | 'otp' | 'success'
+    const [pwdStep, setPwdStep] = useState('form');
+    const [passwordData, setPasswordData] = useState({ old_password: '', new_password: '', confirm_password: '' });
+    const [showPasswords, setShowPasswords] = useState({ old: false, new: false, confirm: false });
+    const [otpData, setOtpData] = useState({ otp_id: null, email_hint: '', code: '' });
+    const [pwdStatus, setPwdStatus] = useState({ type: '', message: '' });
+    const [pwdLoading, setPwdLoading] = useState(false);
+    // Resend cooldown (60 soniya)
+    const [resendCooldown, setResendCooldown] = useState(0);
+    const resendTimerRef = useRef(null);
+    // OTP input refs (6 ta alohida input)
+    const otpRefs = useRef([]);
+
+    const startResendCooldown = () => {
+        setResendCooldown(60);
+        resendTimerRef.current = setInterval(() => {
+            setResendCooldown(prev => {
+                if (prev <= 1) { clearInterval(resendTimerRef.current); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    useEffect(() => () => clearInterval(resendTimerRef.current), []);
+
+    // OTP input — har bir harf kiritilganda keyingisiga ko'chirish
+    const handleOtpInput = (index, value) => {
+        const digit = value.replace(/\D/g, '').slice(-1);
+        const chars = otpData.code.split('');
+        chars[index] = digit;
+        const newCode = chars.join('').slice(0, 6);
+        setOtpData(prev => ({ ...prev, code: newCode }));
+        if (digit && index < 5) otpRefs.current[index + 1]?.focus();
+        if (!digit && index > 0) otpRefs.current[index - 1]?.focus();
+    };
+
+    const handleOtpKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !otpData.code[index] && index > 0) {
+            otpRefs.current[index - 1]?.focus();
+        }
+        if (e.key === 'ArrowLeft' && index > 0) otpRefs.current[index - 1]?.focus();
+        if (e.key === 'ArrowRight' && index < 5) otpRefs.current[index + 1]?.focus();
+    };
+
+    // OTP ni paste qilish
+    const handleOtpPaste = (e) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        setOtpData(prev => ({ ...prev, code: pasted }));
+        const nextIndex = Math.min(pasted.length, 5);
+        otpRefs.current[nextIndex]?.focus();
+    };
+
+    // 1-bosqich: parol so'rovi → OTP yuborish
+    const handleRequestPasswordChange = async (e) => {
+        e.preventDefault();
+        if (passwordData.new_password !== passwordData.confirm_password) {
+            setPwdStatus({ type: 'error', message: 'Yangi parollar mos kelmaydi.' });
+            return;
+        }
+        setPwdLoading(true);
+        setPwdStatus({ type: '', message: '' });
+        try {
+            const payload = { new_password: passwordData.new_password };
+            const needsOldPassword = user?.has_password && !user?.is_social;
+
+            if (needsOldPassword) {
+                payload.old_password = passwordData.old_password;
+            }
+            const res = await apiClient.post(API_ENDPOINTS.REQUEST_PASSWORD_CHANGE, payload);
+            if (res.data.status === 'success') {
+                setOtpData({ otp_id: res.data.otp_id, email_hint: res.data.email_hint, code: '' });
+                setPwdStep('otp');
+                setPwdStatus({ type: 'success', message: res.data.message });
+                startResendCooldown();
+                setTimeout(() => otpRefs.current[0]?.focus(), 300);
+            } else {
+                setPwdStatus({ type: 'error', message: res.data.message || 'Xatolik yuz berdi.' });
+            }
+        } catch (err) {
+            setPwdStatus({ type: 'error', message: err.response?.data?.message || 'Xatolik yuz berdi.' });
+        } finally {
+            setPwdLoading(false);
+        }
+    };
+
+    // 2-bosqich: OTP tasdiqlash
+    const handleVerifyOtp = async (e) => {
+        e?.preventDefault();
+        if (otpData.code.length !== 6) {
+            setPwdStatus({ type: 'error', message: '6 raqamli kodni to\'liq kiriting.' });
+            return;
+        }
+        setPwdLoading(true);
+        setPwdStatus({ type: '', message: '' });
+        try {
+            const res = await apiClient.post(API_ENDPOINTS.VERIFY_PASSWORD_OTP, {
+                otp_id: otpData.otp_id,
+                code: otpData.code,
+            });
+            if (res.data.status === 'success') {
+                setPwdStep('success');
+                setPwdStatus({ type: 'success', message: res.data.message });
+                setUser(prev => ({ ...prev, has_password: true }));
+            } else {
+                setPwdStatus({ type: 'error', message: res.data.message });
+                if (res.data.expired) {
+                    setTimeout(() => { setPwdStep('form'); setPasswordData({ old_password: '', new_password: '', confirm_password: '' }); }, 2500);
+                }
+            }
+        } catch (err) {
+            setPwdStatus({ type: 'error', message: err.response?.data?.message || 'Xatolik yuz berdi.' });
+        } finally {
+            setPwdLoading(false);
+        }
+    };
+
+    // Qayta yuborish
+    const handleResendOtp = async () => {
+        if (resendCooldown > 0) return;
+        setPwdLoading(true);
+        setPwdStatus({ type: '', message: '' });
+        try {
+            const res = await apiClient.post(API_ENDPOINTS.RESEND_PASSWORD_OTP, { otp_id: otpData.otp_id });
+            if (res.data.status === 'success') {
+                setOtpData(prev => ({ ...prev, otp_id: res.data.otp_id, code: '' }));
+                setPwdStatus({ type: 'success', message: 'Yangi kod emailingizga yuborildi.' });
+                startResendCooldown();
+                otpRefs.current[0]?.focus();
+            } else {
+                setPwdStatus({ type: 'error', message: res.data.message });
+            }
+        } catch (err) {
+            setPwdStatus({ type: 'error', message: err.response?.data?.message || 'Xatolik.' });
+        } finally {
+            setPwdLoading(false);
+        }
+    };
+
+    const resetPwdFlow = () => {
+        setPwdStep('form');
+        setPasswordData({ old_password: '', new_password: '', confirm_password: '' });
+        setOtpData({ otp_id: null, email_hint: '', code: '' });
+        setPwdStatus({ type: '', message: '' });
+        clearInterval(resendTimerRef.current);
+        setResendCooldown(0);
+    };
+
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -194,8 +344,23 @@ const ProfilePage = () => {
                     background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
                 }}>
                     <div className="modal-content glass" style={{ padding: '3rem', maxWidth: '500px', width: '90%', borderRadius: '1rem', background: '#050505', border: '1px solid var(--border)' }}>
-                        <h2>PROFILNI TO'LDIRING</h2>
-                        <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)' }}>ACCESS GRANTED. INITIALIZE PROFILE COMPLETION.</p>
+                        <h2 style={{ letterSpacing: '2px' }}>PROFILNI TO'LDIRING</h2>
+                        <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>ACCESS GRANTED. INITIALIZE PROFILE COMPLETION.</p>
+
+                        {updateStatus.message && (
+                            <div style={{
+                                padding: '1rem',
+                                marginBottom: '1.5rem',
+                                borderRadius: '8px',
+                                background: updateStatus.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(0, 242, 254, 0.1)',
+                                border: `1px solid ${updateStatus.type === 'error' ? '#ef4444' : '#00f2fe'}`,
+                                color: updateStatus.type === 'error' ? '#f87171' : '#00f2fe',
+                                fontSize: '0.85rem'
+                            }}>
+                                {updateStatus.message}
+                            </div>
+                        )}
+
                         <form onSubmit={handleUpdateProfile}>
                             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                                 <label style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem' }}>MAKTAB NOMI</label>
@@ -228,11 +393,27 @@ const ProfilePage = () => {
                                     style={{ width: '100%', padding: '1rem', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border)', color: '#fff' }}
                                     value={formData.phone_number}
                                     onChange={e => setFormData({ ...formData, phone_number: e.target.value })}
+                                    placeholder="+998901234567"
                                     required
                                 />
                             </div>
-                            <button type="submit" className="btn btn-primary btn-block">
-                                Profilni Saqlash
+                            <button
+                                type="submit"
+                                className="btn btn-primary btn-block"
+                                disabled={updateStatus.type === 'info'}
+                                style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    marginTop: '1rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px'
+                                }}
+                            >
+                                {updateStatus.type === 'info' ? (
+                                    <><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style={{ width: '1rem', height: '1rem' }}></span> Saqlanmoqda...</>
+                                ) : 'PROFILNI SAQLASH'}
                             </button>
                         </form>
                     </div>
@@ -498,26 +679,330 @@ const ProfilePage = () => {
                                     </form>
                                 </div>
 
-                                <div className="settings-section" style={{ borderTop: '1px solid var(--gray-200)', paddingTop: '2rem' }}>
-                                    <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Parolni O'zgartirish</h3>
-                                    <form onSubmit={handleChangePassword}>
-                                        <div style={{ display: 'grid', gap: '1rem', marginBottom: '1rem', maxWidth: '400px' }}>
-                                            <div>
-                                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Joriy Parol</label>
-                                                <input type="password" className="form-control" style={{ width: '100%', padding: '0.5rem' }} value={passwordData.old_password} onChange={e => setPasswordData({ ...passwordData, old_password: e.target.value })} required />
-                                            </div>
-                                            <div>
-                                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Yangi Parol</label>
-                                                <input type="password" className="form-control" style={{ width: '100%', padding: '0.5rem' }} value={passwordData.new_password} onChange={e => setPasswordData({ ...passwordData, new_password: e.target.value })} required />
-                                            </div>
-                                            <div>
-                                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Yangi Parolni Tasdiqlash</label>
-                                                <input type="password" className="form-control" style={{ width: '100%', padding: '0.5rem' }} value={passwordData.confirm_password} onChange={e => setPasswordData({ ...passwordData, confirm_password: e.target.value })} required />
-                                            </div>
+                                <div className="settings-section" style={{ borderTop: '1px solid rgba(0,242,254,0.1)', paddingTop: '2rem' }}>
+
+                                    {/* ── Header ── */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                        <div style={{
+                                            width: '36px', height: '36px', borderRadius: '10px',
+                                            background: 'linear-gradient(135deg,rgba(0,242,254,0.15),rgba(79,172,254,0.15))',
+                                            border: '1px solid rgba(0,242,254,0.3)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: '#00f2fe', fontSize: '1rem'
+                                        }}>
+                                            <FaShieldAlt />
                                         </div>
-                                        <button type="submit" className="btn btn-outline">Parolni Yangilash</button>
-                                    </form>
+                                        <div>
+                                            <h3 style={{ fontSize: '1.1rem', margin: 0, color: '#e2e8f0' }}>{user?.is_social ? "Parol O'rnatish" : "Parolni O'zgartirish"}</h3>
+                                            <p style={{ fontSize: '0.78rem', color: '#475569', margin: 0 }}>{user?.is_social ? "Hisobingiz uchun yangi parol o'rnating" : "Email tasdiqi orqali xavfsiz o'zgartirish"}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* ── Progress Steps ── */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0', marginBottom: '2rem', maxWidth: '360px' }}>
+                                        {[
+                                            { num: 1, label: user?.is_social ? 'Yangi Parol' : 'Parol', icon: <FaLock /> },
+                                            { num: 2, label: 'Tasdiqlash', icon: <FaKey /> },
+                                            { num: 3, label: 'Tayyor', icon: <FaCheckCircle /> },
+                                        ].map((step, idx) => {
+                                            const currentNum = pwdStep === 'form' ? 1 : pwdStep === 'otp' ? 2 : 3;
+                                            const isActive = currentNum === step.num;
+                                            const isDone = currentNum > step.num;
+                                            return (
+                                                <div key={step.num} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                                    <div style={{ textAlign: 'center', flex: '0 0 auto' }}>
+                                                        <div style={{
+                                                            width: '34px', height: '34px', borderRadius: '50%',
+                                                            background: isDone ? 'linear-gradient(135deg,#00f2fe,#4facfe)' : isActive ? 'rgba(0,242,254,0.15)' : 'rgba(255,255,255,0.05)',
+                                                            border: isDone ? 'none' : isActive ? '2px solid #00f2fe' : '2px solid rgba(255,255,255,0.1)',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            color: isDone ? '#030308' : isActive ? '#00f2fe' : '#475569',
+                                                            fontSize: '0.8rem', fontWeight: 700,
+                                                            transition: 'all 0.3s ease',
+                                                            margin: '0 auto'
+                                                        }}>
+                                                            {isDone ? <FaCheckCircle /> : step.icon}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.65rem', marginTop: '4px', color: isActive ? '#00f2fe' : isDone ? '#4facfe' : '#475569', letterSpacing: '0.05em' }}>
+                                                            {step.label}
+                                                        </div>
+                                                    </div>
+                                                    {idx < 2 && (
+                                                        <div style={{
+                                                            flex: 1, height: '2px',
+                                                            background: isDone ? 'linear-gradient(90deg,#00f2fe,#4facfe)' : 'rgba(255,255,255,0.07)',
+                                                            margin: '0 6px', marginBottom: '18px',
+                                                            transition: 'background 0.4s ease'
+                                                        }} />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* ── Status Message ── */}
+                                    <AnimatePresence>
+                                        {pwdStatus.message && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -8, height: 0 }}
+                                                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                                exit={{ opacity: 0, y: -8, height: 0 }}
+                                                style={{
+                                                    padding: '10px 14px',
+                                                    borderRadius: '8px',
+                                                    marginBottom: '1.25rem',
+                                                    fontSize: '0.85rem',
+                                                    background: pwdStatus.type === 'error' ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
+                                                    border: `1px solid ${pwdStatus.type === 'error' ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
+                                                    color: pwdStatus.type === 'error' ? '#f87171' : '#34d399',
+                                                }}
+                                            >
+                                                {pwdStatus.message}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    {/* ════════════════════════════════════════
+                                        STEP 1 — Parol shakli
+                                    ════════════════════════════════════════ */}
+                                    <AnimatePresence mode="wait">
+                                        {pwdStep === 'form' && (
+                                            <motion.form
+                                                key="pwd-form"
+                                                initial={{ opacity: 0, x: 30 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: -30 }}
+                                                transition={{ duration: 0.25 }}
+                                                onSubmit={handleRequestPasswordChange}
+                                                style={{ maxWidth: '420px' }}
+                                            >
+                                                {[
+                                                    { key: 'old_password', label: 'Joriy Parol', showKey: 'old', placeholder: 'Hozirgi parolingiz', hide: (!user?.has_password || user?.is_social) },
+                                                    { key: 'new_password', label: 'Yangi Parol', showKey: 'new', placeholder: 'Kamida 8 belgi, 1 raqam' },
+                                                    { key: 'confirm_password', label: 'Yangi Parolni Tasdiqlash', showKey: 'confirm', placeholder: 'Yangi parolni qayta kiriting' },
+                                                ].filter(f => !f.hide).map(field => (
+                                                    <div key={field.key} style={{ marginBottom: '1.1rem' }}>
+                                                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.78rem', color: '#94a3b8', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                                                            {field.label}
+                                                        </label>
+                                                        <div style={{ position: 'relative' }}>
+                                                            <input
+                                                                type={showPasswords[field.showKey] ? 'text' : 'password'}
+                                                                style={{
+                                                                    width: '100%', padding: '0.75rem 2.5rem 0.75rem 0.9rem',
+                                                                    background: 'rgba(255,255,255,0.04)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    borderRadius: '8px', color: '#e2e8f0',
+                                                                    fontSize: '0.9rem', outline: 'none',
+                                                                    transition: 'border-color 0.2s',
+                                                                    boxSizing: 'border-box',
+                                                                }}
+                                                                onFocus={e => e.target.style.borderColor = 'rgba(0,242,254,0.5)'}
+                                                                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                                                                value={passwordData[field.key]}
+                                                                onChange={e => setPasswordData({ ...passwordData, [field.key]: e.target.value })}
+                                                                placeholder={field.placeholder}
+                                                                required
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowPasswords(p => ({ ...p, [field.showKey]: !p[field.showKey] }))}
+                                                                style={{
+                                                                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                                                    background: 'none', border: 'none', color: '#475569', cursor: 'pointer', padding: '4px', fontSize: '0.85rem'
+                                                                }}
+                                                            >
+                                                                {showPasswords[field.showKey] ? '🙈' : '👁'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                <div style={{ marginTop: '0.5rem', marginBottom: '1.25rem', padding: '10px 14px', background: 'rgba(0,242,254,0.05)', borderRadius: '8px', border: '1px solid rgba(0,242,254,0.1)' }}>
+                                                    <p style={{ color: '#64748b', fontSize: '0.78rem', margin: 0, lineHeight: 1.6 }}>
+                                                        🔐 Muvaffaqiyatli bo'lgandan so'ng <strong style={{ color: '#00f2fe' }}>emailingizga</strong> 6 raqamli tasdiqlash kodi yuboriladi.
+                                                        Kod <strong style={{ color: '#00f2fe' }}>30 daqiqa</strong> ichida faol bo'ladi.
+                                                    </p>
+                                                </div>
+
+                                                <button
+                                                    type="submit"
+                                                    disabled={pwdLoading}
+                                                    style={{
+                                                        display: 'flex', alignItems: 'center', gap: '8px',
+                                                        padding: '0.8rem 2rem',
+                                                        background: pwdLoading ? 'rgba(0,242,254,0.2)' : 'linear-gradient(135deg,#00f2fe,#4facfe)',
+                                                        border: 'none', borderRadius: '8px',
+                                                        color: pwdLoading ? '#00f2fe' : '#030308',
+                                                        fontWeight: 700, fontSize: '0.88rem', cursor: pwdLoading ? 'not-allowed' : 'pointer',
+                                                        letterSpacing: '0.05em',
+                                                        transition: 'all 0.2s',
+                                                    }}
+                                                >
+                                                    {pwdLoading ? (
+                                                        <><span style={{ width: '16px', height: '16px', border: '2px solid rgba(0,242,254,0.3)', borderTopColor: '#00f2fe', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} /> Yuborilmoqda...</>
+                                                    ) : (
+                                                        <><FaPaperPlane /> Email ga Kod Yuborish</>
+                                                    )}
+                                                </button>
+                                            </motion.form>
+                                        )}
+
+                                        {/* ════════════════════════════════════════
+                                            STEP 2 — OTP tasdiqlash
+                                        ════════════════════════════════════════ */}
+                                        {pwdStep === 'otp' && (
+                                            <motion.div
+                                                key="otp-form"
+                                                initial={{ opacity: 0, x: 30 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: -30 }}
+                                                transition={{ duration: 0.25 }}
+                                                style={{ maxWidth: '420px' }}
+                                            >
+                                                {/* Email hint */}
+                                                <div style={{ marginBottom: '1.5rem', padding: '14px 16px', background: 'rgba(0,242,254,0.05)', borderRadius: '10px', border: '1px solid rgba(0,242,254,0.15)' }}>
+                                                    <div style={{ fontSize: '0.75rem', color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>KOD YUBORILDI</div>
+                                                    <div style={{ color: '#00f2fe', fontWeight: 600, fontSize: '0.95rem' }}>
+                                                        📧 {otpData.email_hint}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '4px' }}>⏱ 30 daqiqa ichida faol</div>
+                                                </div>
+
+                                                {/* 6-xonali OTP inputlar */}
+                                                <div style={{ marginBottom: '1.5rem' }}>
+                                                    <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.78rem', color: '#94a3b8', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                                                        Tasdiqlash Kodi
+                                                    </label>
+                                                    <div className="otp-input-container" style={{ display: 'flex', gap: '10px' }} onPaste={handleOtpPaste}>
+                                                        {Array.from({ length: 6 }).map((_, i) => (
+                                                            <input
+                                                                key={i}
+                                                                ref={el => otpRefs.current[i] = el}
+                                                                type="text"
+                                                                inputMode="numeric"
+                                                                maxLength={1}
+                                                                value={otpData.code[i] || ''}
+                                                                onChange={e => handleOtpInput(i, e.target.value)}
+                                                                onKeyDown={e => handleOtpKeyDown(i, e)}
+                                                                style={{
+                                                                    width: '52px', height: '60px',
+                                                                    textAlign: 'center', fontSize: '1.6rem', fontWeight: 800,
+                                                                    background: otpData.code[i] ? 'rgba(0,242,254,0.1)' : 'rgba(255,255,255,0.04)',
+                                                                    border: `2px solid ${otpData.code[i] ? '#00f2fe' : 'rgba(255,255,255,0.1)'}`,
+                                                                    borderRadius: '10px', color: '#00f2fe',
+                                                                    outline: 'none', letterSpacing: '0', caretColor: '#00f2fe',
+                                                                    fontFamily: "'Courier New', monospace",
+                                                                    transition: 'all 0.15s ease',
+                                                                }}
+                                                                onFocus={e => e.target.style.borderColor = '#00f2fe'}
+                                                                onBlur={e => e.target.style.borderColor = otpData.code[i] ? '#00f2fe' : 'rgba(255,255,255,0.1)'}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Tasdiqlash tugmasi */}
+                                                <button
+                                                    onClick={handleVerifyOtp}
+                                                    disabled={pwdLoading || otpData.code.length < 6}
+                                                    style={{
+                                                        display: 'flex', alignItems: 'center', gap: '8px',
+                                                        padding: '0.8rem 2rem', width: '100%', justifyContent: 'center',
+                                                        background: (pwdLoading || otpData.code.length < 6) ? 'rgba(0,242,254,0.1)' : 'linear-gradient(135deg,#00f2fe,#4facfe)',
+                                                        border: 'none', borderRadius: '8px',
+                                                        color: (pwdLoading || otpData.code.length < 6) ? '#00f2fe' : '#030308',
+                                                        fontWeight: 700, fontSize: '0.9rem',
+                                                        cursor: (pwdLoading || otpData.code.length < 6) ? 'not-allowed' : 'pointer',
+                                                        letterSpacing: '0.05em', marginBottom: '1rem',
+                                                        transition: 'all 0.2s',
+                                                    }}
+                                                >
+                                                    {pwdLoading ? (
+                                                        <><span style={{ width: '16px', height: '16px', border: '2px solid rgba(0,242,254,0.3)', borderTopColor: '#00f2fe', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} /> Tekshirilmoqda...</>
+                                                    ) : (
+                                                        <><FaCheckCircle /> Parolni Tasdiqlash</>
+                                                    )}
+                                                </button>
+
+                                                {/* Qayta yuborish */}
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleResendOtp}
+                                                        disabled={resendCooldown > 0 || pwdLoading}
+                                                        style={{
+                                                            display: 'flex', alignItems: 'center', gap: '6px',
+                                                            background: 'none', border: 'none',
+                                                            color: resendCooldown > 0 ? '#475569' : '#00f2fe',
+                                                            cursor: resendCooldown > 0 ? 'not-allowed' : 'pointer',
+                                                            fontSize: '0.82rem', padding: '4px',
+                                                        }}
+                                                    >
+                                                        <FaRedo style={{ fontSize: '0.75rem' }} />
+                                                        {resendCooldown > 0 ? `Qayta yuborish (${resendCooldown}s)` : 'Kodni qayta yuborish'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={resetPwdFlow}
+                                                        style={{
+                                                            background: 'none', border: 'none',
+                                                            color: '#475569', cursor: 'pointer',
+                                                            fontSize: '0.78rem', padding: '4px',
+                                                        }}
+                                                    >
+                                                        ← Orqaga qaytish
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {/* ════════════════════════════════════════
+                                            STEP 3 — Muvaffaqiyat
+                                        ════════════════════════════════════════ */}
+                                        {pwdStep === 'success' && (
+                                            <motion.div
+                                                key="pwd-success"
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                                style={{ maxWidth: '420px', textAlign: 'center', padding: '2rem 1rem' }}
+                                            >
+                                                <motion.div
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    transition={{ delay: 0.1, type: 'spring', stiffness: 400 }}
+                                                    style={{
+                                                        width: '72px', height: '72px', borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg,rgba(16,185,129,0.2),rgba(16,185,129,0.05))',
+                                                        border: '2px solid rgba(16,185,129,0.4)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        margin: '0 auto 1.25rem',
+                                                        fontSize: '2rem', color: '#10b981'
+                                                    }}
+                                                >
+                                                    <FaCheckCircle />
+                                                </motion.div>
+                                                <h4 style={{ color: '#e2e8f0', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Parol Muvaffaqiyatli O'zgartirildi!</h4>
+                                                <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                                                    Hisobingiz xavfsizligi yangilandi. Endi yangi parol bilan kiring.
+                                                </p>
+                                                <button
+                                                    onClick={resetPwdFlow}
+                                                    style={{
+                                                        padding: '0.65rem 1.5rem',
+                                                        background: 'rgba(0,242,254,0.1)', border: '1px solid rgba(0,242,254,0.3)',
+                                                        borderRadius: '8px', color: '#00f2fe',
+                                                        cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+                                                    }}
+                                                >
+                                                    Yopish
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
+
                             </div>
                         )}
                     </motion.div>

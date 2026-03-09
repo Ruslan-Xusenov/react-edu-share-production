@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Notification, ChatViolation, ChatBotAccess
+from .models import Notification, ChatViolation, ChatBotAccess, TeamMember
 from accounts.models import CustomUser
 from django.db.models import Count
 from django.http import JsonResponse
@@ -57,6 +57,20 @@ def mark_notification_read(request, notification_id):
     if notification.link:
         return redirect(notification.link)
     return redirect('core:notifications')
+
+@csrf_exempt
+def api_team(request):
+    team = TeamMember.objects.all().order_by('order', 'name')
+    data = []
+    for member in team:
+        data.append({
+            'name': member.name,
+            'role': member.role,
+            'image': request.build_absolute_uri(member.image.url) if member.image else None,
+            'bio': member.bio,
+        })
+    return JsonResponse({'status': 'success', 'team': data})
+
 
 @csrf_exempt
 def api_stats(request):

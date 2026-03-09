@@ -4,7 +4,14 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from datetime import timedelta
-from .models import Notification, UserActivityLog, IPBlocklist, ChatViolation, ChatBotAccess
+from .models import Notification, UserActivityLog, IPBlocklist, ChatViolation, ChatBotAccess, TeamMember
+
+
+@admin.register(TeamMember)
+class TeamMemberAdmin(admin.ModelAdmin):
+    list_display = ['name', 'role', 'order', 'created_at']
+    list_editable = ['order']
+    search_fields = ['name', 'role', 'bio']
 
 
 @admin.register(Notification)

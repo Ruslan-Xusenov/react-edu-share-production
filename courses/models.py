@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
+from django.utils.text import slugify
+import uuid
+import re
 
 
 class Category(models.Model):
@@ -26,7 +29,6 @@ class Category(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            from django.utils.text import slugify
             self.slug = slugify(self.display_name)
         super().save(*args, **kwargs)
     
@@ -113,6 +115,14 @@ class Lesson(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['sub_category'], name='lesson_subcategory_idx'),
+            models.Index(fields=['author'], name='lesson_author_idx'),
+            models.Index(fields=['level'], name='lesson_level_idx'),
+            models.Index(fields=['-views'], name='lesson_views_idx'),
+            models.Index(fields=['-likes'], name='lesson_likes_idx'),
+            models.Index(fields=['is_published', '-created_at'], name='lesson_published_created_idx'),
+        ]
     
     def __str__(self):
         return f"{self.title} by {self.author.full_name}"
@@ -121,18 +131,17 @@ class Lesson(models.Model):
         return f'/courses/lesson/{self.id}/'
 
     def get_youtube_embed_url(self):
-        import re
         # Regular watch URL, Short URL, Shorts, and Embed URL formats
         patterns = [
             r'(?:v=|\/v\/|embed\/|youtu\.be\/|shorts\/|\/e\/|watch\?v=|\?v=)([a-zA-Z0-9_-]{11})',
-            r'^[a-zA-Z0-9_-]{11}$' # Just the ID
+            r'^[a-zA-Z0-9_-]{11}$'  # Just the ID
         ]
-        
+
         for pattern in patterns:
             match = re.search(pattern, self.video_url)
             if match:
                 return f"https://www.youtube.com/embed/{match.group(1)}"
-        
+
         return self.video_url
 
     # Rating fields
@@ -238,7 +247,6 @@ class Certificate(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.certificate_id:
-            import uuid
             self.certificate_id = f"EDUSHARE-{uuid.uuid4().hex[:12].upper()}"
         super().save(*args, **kwargs)
 
@@ -247,9 +255,12 @@ class LessonLike(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lesson_likes')
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='liked_by')
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         unique_together = ['user', 'lesson']
+        indexes = [
+            models.Index(fields=['user', 'lesson'], name='lessonlike_user_lesson_idx'),
+        ]
     
     def __str__(self):
         return f"{self.user.full_name} likes {self.lesson.title}"
@@ -266,7 +277,10 @@ class Comment(models.Model):
     
     class Meta:
         ordering = ['created_at']
-    
+        indexes = [
+            models.Index(fields=['lesson', 'parent'], name='comment_lesson_parent_idx'),
+        ]
+
     def __str__(self):
         return f"Comment by {self.user.full_name} on {self.lesson.title}"
 
@@ -325,14 +339,20 @@ class Enrollment(models.Model):
     class Meta:
         unique_together = ['user', 'lesson']
         ordering = ['-enrolled_at']
+        indexes = [
+            models.Index(fields=['user', 'lesson'], name='enrollment_user_lesson_idx'),
+            models.Index(fields=['user'], name='enrollment_user_idx'),
+        ]
 
     def __str__(self):
         return f"{self.user.username} enrolled in {self.lesson.title}"
 
 
 
+import os
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 
 @receiver(post_save, sender=Lesson)
 def trigger_hls_conversion(sender, instance, created, update_fields, **kwargs):
@@ -340,12 +360,10 @@ def trigger_hls_conversion(sender, instance, created, update_fields, **kwargs):
     Lesson video fayli yuklanganida HLS konvertatsiya qilish.
     Faqat yangi yaratilganda yoki video_file o'zgarganda ishlaydi.
     """
-    # Agar update_fields ko'rsatilgan bo'lsa va video_file u yerda bo'lmasa — o'tkazib yuborish
     if update_fields is not None and 'video_file' not in update_fields:
         return
 
     if instance.video_file and instance.hls_status in ('none', 'error'):
-        import os
         video_path = instance.video_file.path
         if os.path.exists(video_path):
             from courses.hls_converter import convert_to_hls_async

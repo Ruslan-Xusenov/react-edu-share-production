@@ -32,3 +32,46 @@ class CustomUser(AbstractUser):
     
     def get_created_lessons_count(self):
         return self.lessons_created.count()
+
+
+class PasswordChangeOTP(models.Model):
+    """
+    Email orqali parol almashtirish uchun OTP (bir martalik kod).
+    Foydalanuvchi yangi parol kiritadi → OTP emailga yuboriladi →
+    OTP tasdiqlanadi → parol o'zgartiriladi.
+    """
+    user = models.ForeignKey(
+        'accounts.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='password_otp_requests'
+    )
+    # 6-raqamli OTP kodi
+    code = models.CharField(max_length=6)
+    # Yangi parol (hashed) — OTP tasdiqlangandan keyin o'rnatiladi
+    new_password_hash = models.CharField(max_length=255)
+    # 30 daqiqa ichida muddati tugaydi
+    expires_at = models.DateTimeField()
+    # Faqat bir marta ishlatilishi mumkin
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Noto'g'ri urinishlar soni (max 5)
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Parol OTP'
+        verbose_name_plural = 'Parol OTPlar'
+        indexes = [
+            models.Index(fields=['user', 'is_used'], name='otp_user_used_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} — OTP ({self.created_at.strftime('%H:%M')})"
+
+    def is_valid(self):
+        from django.utils import timezone
+        return (
+            not self.is_used
+            and self.expires_at > timezone.now()
+            and self.attempts < 5
+        )

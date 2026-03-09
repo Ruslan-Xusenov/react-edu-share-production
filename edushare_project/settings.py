@@ -101,6 +101,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20,  # SQLite lock timeout (soniyada)
+        },
+        'CONN_MAX_AGE': 60,  # Connection pooling (60 soniya)
     }
 }
 
@@ -237,10 +241,19 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    # Renderers: BrowsableAPI faqat debug rejimda (RAM tejaladi)
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
+    ] + (['rest_framework.renderers.BrowsableAPIRenderer'] if DEBUG else []),
+    # Rate limiting — DDoS va API abuse oldini olish
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/minute',
+        'user': '300/minute',
+    },
 }
 
 
@@ -282,9 +295,10 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_AGE = 86400 * 7  # 7 days
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_COOKIE_NAME = 'edu_sid'  # Default 'sessionid' nomini yashirish
-CSRF_COOKIE_NAME = 'edu_csrf'  # Default 'csrftoken' nomini yashirish
+# SESSION_SAVE_EVERY_REQUEST = True => off: faqat o'zgarganda save qilinsin
+SESSION_SAVE_EVERY_REQUEST = False
+SESSION_COOKIE_NAME = 'edu_sid'   # Default 'sessionid' nomini yashirish
+CSRF_COOKIE_NAME = 'edu_csrf'     # Default 'csrftoken' nomini yashirish
 
 # Permissions-Policy header
 PERMISSIONS_POLICY = {

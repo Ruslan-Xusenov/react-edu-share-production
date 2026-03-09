@@ -1,30 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Inter:wght@400;600&display=swap');
 
-/* 🫧 Modern Soft-Glass Design System */
 :root {
-  --bg-primary: #030308;
-  --bg-secondary: #080812;
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.65);
+  --bg-primary: #102C26;
+  --bg-secondary: #0d241f;
+  --text-primary: #F7E7Ce;
+  --text-secondary: rgba(247, 231, 206, 0.7);
 
-  --accent-cyan: #00f2fe;
-  --accent-pink: #ff00c1;
-  --accent-purple: #7000ff;
-  --accent-blue: #4facfe;
+  --accent-cyan: #F7E7Ce;
+  --accent-pink: #d9bf8f;
+  --accent-purple: #cbb285;
+  --accent-blue: #e0d0b8;
 
-  --border: rgba(255, 255, 255, 0.08);
-  --glass: rgba(255, 255, 255, 0.03);
+  --border: rgba(247, 231, 206, 0.12);
+  --glass: rgba(247, 231, 206, 0.04);
   --glass-blur: blur(25px);
 
   --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+
+  --weight-black: 900;
+  --weight-bold: 700;
+  --weight-regular: 400;
 
   --radius-xl: 32px;
   --radius-lg: 20px;
   --radius-md: 12px;
 
   --transition: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  --glow-soft: 0 0 30px rgba(0, 242, 254, 0.15);
+  --glow-soft: 0 0 30px rgba(247, 231, 206, 0.15);
 }
 
 ::selection {
@@ -55,6 +58,8 @@ body {
   overflow: hidden;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root,
@@ -66,13 +71,13 @@ body {
   overflow: hidden;
 }
 
-/* ── Main Content Base (scroll modes handled in App.css) ── */
 .main-content {
   background: var(--bg-primary);
 }
 
 .main-content::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
+  height: 3px;
 }
 
 .main-content::-webkit-scrollbar-track {
@@ -80,12 +85,25 @@ body {
 }
 
 .main-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 242, 254, 0.15);
-  border-radius: 4px;
+  background: var(--accent-cyan);
+  border-radius: 10px;
 }
 
 .main-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 242, 254, 0.3);
+  background: var(--accent-blue);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* 🧱 Vertical Section Layout */
@@ -108,19 +126,20 @@ body {
 /* 🔤 Opus Typography */
 h1 {
   font-family: var(--font-heading);
-  font-size: clamp(3rem, 8vw, 6rem);
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: 0.1em;
+  font-size: clamp(3rem, 10vw, 7rem);
+  font-weight: var(--weight-black);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
   text-transform: uppercase;
+  margin-bottom: 1rem;
 }
 
 h2 {
   font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 4vw, 3rem);
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0.05em;
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
+  font-weight: var(--weight-black);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
@@ -128,29 +147,26 @@ h2 {
 .custom-cursor {
   width: 12px;
   height: 12px;
-  background: conic-gradient(from 0deg,
-      #00f2fe, #7000ff, #ff0080, #ff0000, #00ff00, #00f2fe);
+  background: #F7E7Ce;
   border-radius: 50%;
   position: fixed;
   pointer-events: none;
   z-index: 99999;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(0, 242, 254, 0.5);
+  box-shadow: 0 0 15px rgba(247, 231, 206, 0.8), 0 0 30px rgba(247, 231, 206, 0.5);
 }
 
 .custom-cursor-follower {
   width: 45px;
   height: 45px;
-  border: 2px solid transparent;
-  background: linear-gradient(#000, #000) padding-box,
-    conic-gradient(#00f2fe, #7000ff, #ff0080, #ff0000, #00ff00, #00f2fe) border-box;
+  border: 1.5px solid #F7E7Ce;
   border-radius: 50%;
   position: fixed;
   pointer-events: none;
   z-index: 99998;
-  transition: transform 0.1s ease-out;
+  transition: transform 0.12s ease-out;
   transform: translate(-50%, -50%);
-  opacity: 0.6;
+  opacity: 0.4;
 }
 
 /* Premium Buttons */
@@ -160,9 +176,9 @@ h2 {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  border: 1px solid #fff;
+  border: 1px solid var(--accent-cyan);
   background: transparent;
-  color: #fff;
+  color: var(--accent-cyan);
   display: inline-flex;
   align-items: center;
   gap: 1rem;
@@ -173,14 +189,15 @@ h2 {
 }
 
 .btn-primary {
-  background: #fff;
-  color: #000;
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
 }
 
 .btn:hover {
-  background: #fff;
-  color: #000;
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
   transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* 🧊 Glassmorphism Utility */

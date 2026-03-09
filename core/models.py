@@ -213,3 +213,21 @@ class ChatBotAccess(models.Model):
                 minutes = int((remaining.total_seconds() % 3600) // 60)
                 return f"{hours} soat {minutes} daqiqa"
         return None
+
+
+class TeamMember(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Ism")
+    role = models.CharField(max_length=255, verbose_name="Lavozim")
+    image = models.ImageField(upload_to='team/', verbose_name="Rasm")
+    bio = models.TextField(verbose_name="Biografiya")
+    order = models.IntegerField(default=0, verbose_name="Tartib")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = "Jamoa a'zosi"
+        verbose_name_plural = "Jamoa a'zolari"
+
+    def __str__(self):
+        return self.name

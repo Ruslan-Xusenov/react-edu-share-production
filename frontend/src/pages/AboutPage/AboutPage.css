@@ -5,7 +5,7 @@
     flex-direction: row;
     width: max-content;
     height: 100vh;
-    background: #000;
+    background: var(--bg-primary);
 }
 
 .about-hero,
@@ -24,7 +24,7 @@
     position: relative;
     scroll-snap-align: start;
     overflow: hidden;
-    background: radial-gradient(circle at center, #0a0a1a 0%, #030308 100%);
+    background: var(--bg-primary);
 }
 
 /* Hero Section */
@@ -61,7 +61,7 @@
 .mission-text {
     font-size: 1.4rem;
     line-height: 1.6;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* Values Grid */
@@ -73,7 +73,7 @@
 }
 
 .value-card {
-    background: #050505;
+    background: var(--bg-secondary);
     border: 1px solid var(--border);
     padding: 3rem;
     height: 400px;
@@ -84,7 +84,7 @@
 
 .value-icon {
     font-size: 3rem;
-    color: #fff;
+    color: var(--accent-cyan);
 }
 
 /* Achievements */
@@ -100,7 +100,7 @@
 .achievement-number {
     font-family: var(--font-heading);
     font-size: 8rem;
-    color: #fff;
+    color: var(--accent-cyan);
 }
 
 .achievement-label {
@@ -126,7 +126,7 @@
 .team-card {
     width: 350px;
 
-    background: #050505;
+    background: var(--bg-secondary);
     border: 1px solid var(--border);
 }
 

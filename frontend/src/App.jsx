@@ -32,14 +32,14 @@ const PageLoader = () => (
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#030308',
+    background: '#102C26',
     flexShrink: 0,
   }}>
     <div style={{
       width: '40px',
       height: '40px',
-      border: '3px solid rgba(0, 242, 254, 0.1)',
-      borderTopColor: '#00f2fe',
+      border: '3px solid rgba(247, 231, 206, 0.1)',
+      borderTopColor: '#F7E7Ce',
       borderRadius: '50%',
       animation: 'spin 0.8s linear infinite',
     }} />
@@ -189,7 +189,7 @@ function App() {
       {/* Default SEO for all pages */}
       <Helmet>
         <html lang="uz" />
-        <meta name="theme-color" content="#030308" />
+        <meta name="theme-color" content="#102C26" />
       </Helmet>
       <ScrollReset />
       <AuthCallbackHandler />

@@ -14,4 +14,8 @@ urlpatterns = [
     path('login/', views.api_login, name='api_login'),
     path('signup/', views.api_signup, name='api_signup'),
     path('logout/', views.api_logout, name='api_logout'),
+    # ── Email OTP parol almashtirish ──────────────────────────────
+    path('request-password-change/', views.api_request_password_change, name='api_request_password_change'),
+    path('verify-password-otp/', views.api_verify_password_otp, name='api_verify_password_otp'),
+    path('resend-password-otp/', views.api_resend_password_otp, name='api_resend_password_otp'),
 ]

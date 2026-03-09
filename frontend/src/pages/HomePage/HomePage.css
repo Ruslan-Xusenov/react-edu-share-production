@@ -31,7 +31,7 @@
     position: relative;
     scroll-snap-align: start;
     overflow: hidden;
-    background: radial-gradient(circle at center, #0a0a1a 0%, #030308 100%);
+    background: var(--bg-primary);
 }
 
 /* Hero needs extra top padding because of fixed navbar */
@@ -59,7 +59,7 @@
 .hero-orb-2 {
     bottom: -10vw;
     right: -10vw;
-    background: var(--accent-pink);
+    background: var(--accent-blue);
 }
 
 .hero-content {
@@ -75,7 +75,7 @@
 
 .hero-gradient-text {
     color: transparent;
-    -webkit-text-stroke: 1px #fff;
+    -webkit-text-stroke: 1px var(--accent-cyan);
 }
 
 .hero-description {
@@ -102,7 +102,7 @@
     font-family: var(--font-heading);
     font-size: 10rem;
     letter-spacing: -0.05em;
-    color: #fff;
+    color: var(--accent-cyan);
 }
 
 .stat-label {
@@ -151,7 +151,7 @@
 
 .category-icon {
     font-size: 3rem;
-    color: #fff;
+    color: var(--accent-cyan);
 }
 
 .category-card h3 {
@@ -191,7 +191,7 @@
 
 .course-image-wrapper {
     aspect-ratio: 21/9;
-    background: #050505;
+    background: var(--bg-secondary);
     overflow-y: auto;
 }
 
@@ -230,7 +230,7 @@
 }
 
 .cta-highlight {
-    background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple));
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
