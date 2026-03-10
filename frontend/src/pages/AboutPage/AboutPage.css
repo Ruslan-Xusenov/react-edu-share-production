@@ -179,12 +179,21 @@
         min-height: 80vh;
         flex-shrink: unset;
         scroll-snap-align: none;
-        padding: 6rem 6vw 4rem;
+        padding: 6rem 8vw 4rem;
     }
 
     .mission-grid {
         grid-template-columns: 1fr;
         gap: 3rem;
+        text-align: center;
+    }
+
+    .mission-image {
+        order: 2;
+    }
+
+    .mission-content {
+        order: 1;
     }
 
     .values-grid {
@@ -193,12 +202,15 @@
     }
 
     .value-card {
-        height: 280px;
-        padding: 2rem;
+        height: auto;
+        min-height: 300px;
+        padding: 2.5rem;
     }
 
     .achievements-grid {
-        gap: 5vw;
+        gap: 8vw;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
     .achievement-number {
@@ -206,98 +218,106 @@
     }
 
     .team-card {
-        width: 280px;
+        width: 300px;
     }
 }
 
 @media (max-width: 768px) {
-
     .about-hero,
     .mission-section,
     .values-section,
     .achievements-section,
     .team-section,
     .about-cta {
-        padding: 5rem 5vw 3rem;
+        padding: 5rem 6vw 4rem;
         min-height: auto;
     }
 
     .about-hero h1 {
-        font-size: clamp(2rem, 7vw, 3rem);
+        font-size: clamp(2.5rem, 10vw, 4rem);
+        letter-spacing: 0.1em;
+    }
+
+    .hero-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    .mission-text {
+        font-size: 1.2rem;
+    }
+
+    .mission-content h2 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .value-card {
+        min-height: auto;
+        padding: 2rem;
+        gap: 1rem;
+    }
+
+    .value-icon {
+        font-size: 2.5rem;
+    }
+
+    .achievement-number {
+        font-size: 4rem;
+    }
+
+    .team-grid {
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .team-card {
+        flex: 0 0 280px;
+    }
+
+    .about-cta h2 {
+        font-size: clamp(2.5rem, 12vw, 5rem);
+        line-height: 1.1;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-hero,
+    .mission-section,
+    .values-section,
+    .achievements-section,
+    .team-section,
+    .about-cta {
+        padding: 4rem 5vw 3rem;
+    }
+
+    .about-hero h1 {
+        font-size: 2.2rem;
+        letter-spacing: 0.05em;
     }
 
     .hero-description {
         font-size: 1rem;
     }
 
-    .mission-text {
-        font-size: 1.1rem;
-    }
-
-    .mission-content h2 {
-        margin-bottom: 2rem;
-    }
-
-    .team-grid {
-        display: flex !important;
-        flex-direction: row !important;
-        overflow-x: auto !important;
-        scroll-snap-type: x mandatory;
-        gap: 1.5rem;
-        padding: 2rem 5vw !important;
-        width: 100%;
-        margin-left: -5vw;
-        scrollbar-width: none;
-    }
-
-    .team-grid::-webkit-scrollbar {
-        display: none;
-    }
-
-    .team-card {
-        width: 85vw !important;
-        max-width: 320px;
-
-        scroll-snap-align: center;
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(20px);
-        margin: 0;
-    }
-
-    .team-content {
-        padding: 1.5rem;
-    }
-
-    .about-cta h2 {
-        font-size: clamp(2rem, 8vw, 4rem);
-    }
-}
-
-@media (max-width: 480px) {
-
-    .about-hero,
-    .mission-section,
-    .values-section,
-    .achievements-section,
-    .team-section,
-    .about-cta {
-        padding: 4.5rem 4vw 2rem;
-    }
-
     .value-card {
-        height: 160px;
         padding: 1.5rem;
-    }
-
-    .value-icon {
-        font-size: 2rem;
     }
 
     .achievement-number {
-        font-size: 3rem;
+        font-size: 3.5rem;
+    }
+
+    .achievement-card {
+        width: 100%;
+        text-align: center;
     }
 
     .team-card {
-        width: 220px;
+        flex: 0 0 260px;
     }
 }

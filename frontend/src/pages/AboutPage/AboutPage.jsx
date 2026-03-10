@@ -12,6 +12,8 @@ import './AboutPage.css';
 
 const AboutPage = () => {
     const [stats, setStats] = useState({
+        students: 2500,
+        courses: 120,
         certificates: 85
     });
     const [team, setTeam] = useState([]);
