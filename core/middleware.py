@@ -138,15 +138,17 @@ class AdvancedSecurityMiddleware:
             response.delete_cookie('edu_persistent_block')
             return response
         
-        # 2. Stricter VPN/Proxy Detection
+        # 2. Relaxed VPN/Proxy Detection to prevent false positives
         if self._is_using_vpn_proxy(request):
+            # Only block if we're reasonably sure, but for now we'll just log
+            # to avoid blocking legitimate users. 
+            # If the user still wants strict blocking, we should use a proper IP intelligence API.
             log_security_event(
                 'VPN_PROXY_DETECTED',
                 f'VPN/Proxy detected from {ip_address} - Path: {request.path}',
                 'WARNING'
             )
-            # Block VPN access strictly if detected
-            return self._forbidden_response('VPN orqali kirish taqiqlangan! Xavfsizlikni ta\'minlash uchun haqiqiy IP orqali kiring.', ip_address)
+            # return self._forbidden_response('VPN orqali kirish taqiqlangan!', ip_address)
         
         if self._check_sql_injection_attempt(request):
             log_security_event(
@@ -207,28 +209,19 @@ class AdvancedSecurityMiddleware:
         return response
     
     def _is_using_vpn_proxy(self, request):
-        """Detect common VPN/Proxy headers"""
+        """Detect common VPN/Proxy headers with relaxed rules to prevent false positives"""
+        # Removed HTTP_X_FORWARDED and HTTP_FORWARDED as they are often false positives
+        # in Cloudflare/Nginx/Corporate Proxy environments.
         vpn_headers = [
-            'HTTP_VIA',
             'HTTP_X_PROXY_ID',
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_FORWARDED',
-            'HTTP_X_FORWARDED',
-            'HTTP_PROXY_CONNECTION'
+            'HTTP_VIA',
+            'HTTP_PROXY_CONNECTION',
         ]
         
-        # Note: X_FORWARDED_FOR can be legitimate (Nginx), 
-        # but if it has multiple hops, it's often a proxy.
-        xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
-        if ',' in xff:
-            return True
-            
         for h in vpn_headers:
             if request.META.get(h):
-                # Don't flag single hop XFF as VPN if we know about the proxy
-                if h == 'HTTP_X_FORWARDED_FOR' and not ',' in request.META.get(h):
-                    continue
                 return True
+                
         return False
     
     def _check_sql_injection_attempt(self, request):
@@ -295,6 +288,7 @@ class AdvancedSecurityMiddleware:
             .timer{{font-size:48px;font-weight:700;margin:20px 0;color:#ff4444;font-family:monospace;}}
             .msg{{color:rgba(255,255,255,0.8);line-height:1.6;}}
             .vpn-msg{{background:rgba(255,68,68,0.15);padding:15px;border-radius:12px;margin:20px 0;font-weight:600;font-size:14px;border:1px solid rgba(255,68,68,0.3);}}
+            .hidden{{display:none;}}
         </style>
         </head><body>
             <div class="card">
@@ -303,32 +297,40 @@ class AdvancedSecurityMiddleware:
                 
                 <div class="vpn-msg">Xavfsizlik tizimi sizning harakatingizda xavf sezdi. VPN blokni chetlab o'tishga yordam bermaydi.</div>
                 
-                <div id="countdown-label">Blokdan chiqishga qoldi:</div>
-                <div id="timer" class="timer">00:00:00</div>
+                <div id="countdown-container" class="{'hidden' if js_seconds <= 0 else ''}">
+                    <div id="countdown-label">Blokdan chiqishga qoldi:</div>
+                    <div id="timer" class="timer">00:00:00</div>
+                </div>
+                
+                <div id="reload-msg" class="{'' if js_seconds <= 0 else 'hidden'}">
+                    <p>Harakatlaringiz qaytadan tekshirilishi uchun sahifani yangilang.</p>
+                </div>
                 
                 <p><small style="color:rgba(255,255,255,0.4)">IP: {ip_address or '---'}</small></p>
             </div>
             
             <script>
                 let seconds = {js_seconds};
-                function updateTimer() {{
-                    if (seconds <= 0) {{
-                        document.getElementById('timer').innerHTML = "Blok tugadi";
-                        document.getElementById('countdown-label').innerHTML = "Sahifani yangilang:";
-                        return;
+                if (seconds > 0) {{
+                    function updateTimer() {{
+                        if (seconds <= 0) {{
+                            document.getElementById('countdown-container').classList.add('hidden');
+                            document.getElementById('reload-msg').classList.remove('hidden');
+                            return;
+                        }}
+                        let h = Math.floor(seconds / 3600);
+                        let m = Math.floor((seconds % 3600) / 60);
+                        let s = seconds % 60;
+                        document.getElementById('timer').innerHTML = 
+                            (h < 10 ? '0'+h : h) + ":" + (m < 10 ? '0'+m : m) + ":" + (s < 10 ? '0'+s : s);
+                        seconds--;
+                        setTimeout(updateTimer, 1000);
                     }}
-                    let h = Math.floor(seconds / 3600);
-                    let m = Math.floor((seconds % 3600) / 60);
-                    let s = seconds % 60;
-                    document.getElementById('timer').innerHTML = 
-                        (h < 10 ? '0'+h : h) + ":" + (m < 10 ? '0'+m : m) + ":" + (s < 10 ? '0'+s : s);
-                    seconds--;
-                    setTimeout(updateTimer, 1000);
+                    updateTimer();
                 }}
-                updateTimer();
             </script>
         </body></html>
-        '''
+'''
         response = HttpResponseForbidden(html, content_type='text/html; charset=utf-8')
         return response
     
