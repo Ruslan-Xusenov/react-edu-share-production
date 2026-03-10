@@ -135,9 +135,11 @@ const CoursesPage = () => {
                                     >
                                         <div className="course-image-yt">
                                             <img
-                                                src={course.thumbnail_url || `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=600&q=75`}
+                                                src={course.thumbnail_url || `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=600&h=400&fit=crop&q=60`}
                                                 alt={course.title}
                                                 loading="lazy"
+                                                width="600"
+                                                height="400"
                                             />
                                             <div className="category-tag-yt">{course.category?.display_name || 'GENERAL'}</div>
                                         </div>

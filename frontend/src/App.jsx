@@ -4,7 +4,7 @@ import { HelmetProvider, Helmet } from 'react-helmet-async';
 import Navbar from './components/Navbar/Navbar';
 import apiClient, { API_ENDPOINTS } from './config/api';
 import SplashScreen from './components/SplashScreen/SplashScreen';
-import AIChatBot from './components/AIChatBot/AIChatBot';
+const AIChatBot = lazy(() => import('./components/AIChatBot/AIChatBot'));
 import { AnimatePresence, motion } from 'framer-motion';
 import './App.css';
 
@@ -145,6 +145,22 @@ function App() {
     if (!container) return;
 
     let ticking = false;
+    let cachedMetrics = {
+      scrollWidth: container.scrollWidth,
+      clientWidth: container.clientWidth,
+      scrollHeight: container.scrollHeight,
+      clientHeight: container.clientHeight
+    };
+
+    const updateMetrics = () => {
+      cachedMetrics = {
+        scrollWidth: container.scrollWidth,
+        clientWidth: container.clientWidth,
+        scrollHeight: container.scrollHeight,
+        clientHeight: container.clientHeight
+      };
+    };
+
     const handleScroll = () => {
       if (ticking) return;
       ticking = true;
@@ -152,10 +168,10 @@ function App() {
         const progress = document.querySelector('.scroll-progress');
         if (progress) {
           if (isHorizontalRoute && window.innerWidth > 1024) {
-            const scrollPercent = (container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100;
+            const scrollPercent = (container.scrollLeft / (cachedMetrics.scrollWidth - cachedMetrics.clientWidth)) * 100;
             progress.style.width = (scrollPercent || 0) + '%';
           } else {
-            const scrollPercent = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
+            const scrollPercent = (container.scrollTop / (cachedMetrics.scrollHeight - cachedMetrics.clientHeight)) * 100;
             progress.style.width = (scrollPercent || 0) + '%';
           }
         }
@@ -174,9 +190,11 @@ function App() {
       }
     };
 
+    window.addEventListener('resize', updateMetrics);
     container.addEventListener('scroll', handleScroll, { passive: true });
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
+      window.removeEventListener('resize', updateMetrics);
       container.removeEventListener('scroll', handleScroll);
       container.removeEventListener('wheel', handleWheel);
     };
@@ -199,7 +217,9 @@ function App() {
         <div className="custom-cursor-follower" aria-hidden="true"></div>
         <div className="scroll-progress" role="progressbar" aria-label="Sahifa scroll progressi" aria-hidden="true"></div>
         <Navbar />
-        <AIChatBot />
+        <Suspense fallback={null}>
+          <AIChatBot />
+        </Suspense>
         <main className={`main-content ${scrollModeClass}`} id="main-content" aria-label="Asosiy kontent">
           <Suspense fallback={<PageLoader />}>
             <AnimatePresence mode="wait">

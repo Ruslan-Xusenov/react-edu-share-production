@@ -55,14 +55,16 @@ const AboutPage = () => {
         let scrollInterval;
         const startAutoScroll = () => {
             scrollInterval = setInterval(() => {
-                const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
-                const maxScroll = scrollWidth - clientWidth;
+                requestAnimationFrame(() => {
+                    const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
+                    const maxScroll = scrollWidth - clientWidth;
 
-                if (scrollLeft >= maxScroll - 5) {
-                    scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    scrollContainer.scrollBy({ left: clientWidth * 0.8, behavior: 'smooth' });
-                }
+                    if (scrollLeft >= maxScroll - 5) {
+                        scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+                    } else {
+                        scrollContainer.scrollBy({ left: clientWidth * 0.8, behavior: 'smooth' });
+                    }
+                });
             }, 4000);
         };
 

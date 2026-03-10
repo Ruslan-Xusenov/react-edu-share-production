@@ -26,7 +26,8 @@ export default defineConfig(({ command }) => {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-ui': ['framer-motion', 'react-icons'],
+            'vendor-motion': ['framer-motion'],
+            'vendor-icons': ['react-icons'],
           },
         },
       },
