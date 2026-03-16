@@ -3,70 +3,15 @@
 
 User-agent: *
 Allow: /
-Allow: /courses
-Allow: /courses/*
-Allow: /about
-Allow: /leaderboard
+Allow: /courses/
+Allow: /about/
+Allow: /leaderboard/
+Allow: /login/
+Allow: /signup/
 
-# Private/Auth sahifalar
-Disallow: /api/
-Disallow: /admin/
-Disallow: /accounts/
-Allow: /login
-Allow: /signup
-Disallow: /profile
-Disallow: /my-learning
-Disallow: /create-lesson
-Disallow: /certificate/
-
-# Static va media fayllar
+# Static and media files
 Disallow: /static/
 Disallow: /media/
 
 # Sitemap
 Sitemap: https://edushare.uz/sitemap.xml
-
-# Google Bot
-User-agent: Googlebot
-Allow: /
-Allow: /courses
-Allow: /courses/*
-Allow: /about
-Allow: /leaderboard
-Disallow: /api/
-Disallow: /admin/
-Disallow: /accounts/
-Allow: /login
-Allow: /signup
-Disallow: /profile
-Disallow: /my-learning
-Disallow: /create-lesson
-
-# Yandex Bot
-User-agent: YandexBot
-Allow: /
-Allow: /courses
-Allow: /courses/*
-Allow: /about
-Allow: /leaderboard
-Disallow: /api/
-Disallow: /admin/
-Disallow: /accounts/
-Crawl-delay: 2
-
-# Bing Bot
-User-agent: Bingbot
-Allow: /
-Allow: /courses
-Allow: /courses/*
-Allow: /about
-Allow: /leaderboard
-Disallow: /api/
-Disallow: /admin/
-Disallow: /accounts/
-Allow: /login
-Allow: /signup
-Disallow: /profile
-Disallow: /my-learning
-Disallow: /create-lesson
-Disallow: /certificate/

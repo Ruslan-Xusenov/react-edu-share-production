@@ -29,8 +29,8 @@ graceful_timeout = 30
 keepalive = 5
 
 # ── Logging ────────────────────────────────────────────────────────────────
-accesslog = '/var/log/edushare/gunicorn-access.log'
-errorlog  = '/var/log/edushare/gunicorn-error.log'
+accesslog = '/home/kali/Desktop/projects/Django/edushare.uz/logs/gunicorn-access.log'
+errorlog  = '/home/kali/Desktop/projects/Django/edushare.uz/logs/gunicorn-error.log'
 loglevel  = 'warning'   # 'info' in dev; 'warning' in prod to reduce I/O
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
@@ -39,7 +39,7 @@ proc_name = 'edushare'
 
 # ── Server Mechanics ───────────────────────────────────────────────────────
 daemon  = False
-pidfile = '/var/run/edushare/gunicorn.pid'
+pidfile = '/home/kali/Desktop/projects/Django/edushare.uz/logs/gunicorn.pid'
 user    = None
 group   = None
 tmp_upload_dir = None

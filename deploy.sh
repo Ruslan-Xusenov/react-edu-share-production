@@ -10,7 +10,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 PROJECT_NAME="edushare"
-PROJECT_DIR="/home/react-edu-share-production"
+PROJECT_DIR="/home/kali/Desktop/projects/Django/edushare.uz"
 VENV_DIR="$PROJECT_DIR/venv"
 USER="www-data"
 GROUP="www-data"
@@ -152,12 +152,12 @@ systemctl enable redis-server
 systemctl start redis-server
 print_status "Redis configured"
 
-echo ""
-echo "15. Creating Django superuser..."
-print_warning "Enter superuser credentials:"
-cd $PROJECT_DIR
-source venv/bin/activate
-python manage.py createsuperuser --settings=edushare_project.settings_production
+# echo ""
+# echo "15. Creating Django superuser..."
+# print_warning "Enter superuser credentials:"
+# cd $PROJECT_DIR
+# source venv/bin/activate
+# python manage.py createsuperuser --settings=edushare_project.settings_production
 
 echo ""
 echo "========================================="

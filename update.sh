@@ -13,7 +13,7 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-PROJECT_DIR="/home/react-edu-share-production"
+PROJECT_DIR="/home/kali/Desktop/projects/Django/edushare.uz"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
 VENV="$PROJECT_DIR/venv/bin/activate"
 
