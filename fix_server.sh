@@ -2,17 +2,21 @@
 # Saytni jonlantirish (fix) skripti
 # Foydalanish: sudo ./fix_server.sh
 
-PROJECT_DIR="/home/kali/Desktop/projects/Django/edushare.uz"
+PROJECT_DIR="/home/react-edu-share-production"
 USER="www-data"
 GROUP="www-data"
 
 echo "1. Kerakli papkalarni yaratish..."
+mkdir -p /var/log/edushare
+mkdir -p /var/run/edushare
 mkdir -p $PROJECT_DIR/logs
 mkdir -p $PROJECT_DIR/staticfiles
 mkdir -p $PROJECT_DIR/media
 
 echo "2. Ruxsatlarni o'rnatish..."
 chown -R $USER:$GROUP $PROJECT_DIR
+chown -R $USER:$GROUP /var/log/edushare
+chown -R $USER:$GROUP /var/run/edushare
 chmod -R 755 $PROJECT_DIR
 
 echo "3. Xizmatlarni sozlash..."

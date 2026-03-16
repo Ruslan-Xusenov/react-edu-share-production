@@ -10,7 +10,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 PROJECT_NAME="edushare"
-PROJECT_DIR="/home/kali/Desktop/projects/Django/edushare.uz"
+PROJECT_DIR="/home/react-edu-share-production"
 VENV_DIR="$PROJECT_DIR/venv"
 USER="www-data"
 GROUP="www-data"
