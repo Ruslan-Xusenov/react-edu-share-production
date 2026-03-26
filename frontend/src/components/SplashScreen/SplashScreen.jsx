@@ -19,16 +19,16 @@ const SplashScreen = ({ onComplete }) => {
     }, []);
 
     useEffect(() => {
-        // Start fade out at 0.1 seconds (since we have static splash)
+        // Start fade out at 0.8 seconds
         const fadeTimer = setTimeout(() => {
             setFadeOut(true);
-        }, 100);
+        }, 800);
 
-        // Remove from DOM at 0.4 seconds
+        // Remove from DOM at 1.2 seconds
         const removeTimer = setTimeout(() => {
             setRemoved(true);
             if (onComplete) onComplete();
-        }, 400);
+        }, 1200);
 
         return () => {
             clearTimeout(fadeTimer);
