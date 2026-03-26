@@ -19,8 +19,9 @@ if (rootElement) {
   setTimeout(() => {
     const staticSplash = document.getElementById('static-splash');
     if (staticSplash) {
+      staticSplash.style.transition = 'opacity 0.8s ease';
       staticSplash.style.opacity = '0';
-      setTimeout(() => staticSplash.remove(), 500);
+      setTimeout(() => staticSplash.remove(), 1000);
     }
-  }, 100);
+  }, 500);
 }

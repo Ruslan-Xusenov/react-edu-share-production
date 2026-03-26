@@ -169,8 +169,10 @@ const CreateLessonPage = () => {
                 data.append('thumbnail', formData.thumbnail);
             }
 
-            // 1. Create Lesson
-            const lessonRes = await apiClient.post(API_ENDPOINTS.LESSONS, data);
+            // 1. Create Lesson — increased timeout for large video files
+            const lessonRes = await apiClient.post(API_ENDPOINTS.LESSONS, data, {
+                timeout: 600000 // 10 minutes
+            });
             const lessonId = lessonRes.data.id;
 
             // 2. Create Quiz Questions if any
