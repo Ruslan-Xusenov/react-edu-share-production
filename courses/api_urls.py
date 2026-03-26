@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from courses.api_views import (
-    CategoryViewSet, SubCategoryViewSet, LessonViewSet, CommentViewSet,
+    CategoryViewSet, SubCategoryViewSet, SubSubCategoryViewSet, LessonViewSet, CommentViewSet,
     AssignmentViewSet, SubmissionViewSet, CertificateViewSet, LessonQuizViewSet
 )
 
@@ -10,6 +10,7 @@ app_name = 'api'
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'subcategories', SubCategoryViewSet, basename='subcategory')
+router.register(r'sub-sub-categories', SubSubCategoryViewSet, basename='subsubcategory')
 router.register(r'lessons', LessonViewSet, basename='lesson')
 router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'assignments', AssignmentViewSet, basename='assignment')

@@ -15,7 +15,7 @@ def course_list(request):
     
     category_id = request.GET.get('category')
     if category_id:
-        lessons = lessons.filter(sub_category__category_id=category_id)
+        lessons = lessons.filter(sub_sub_category__sub_category__category_id=category_id)
     
     level = request.GET.get('level')
     if level:
@@ -26,7 +26,8 @@ def course_list(request):
         lessons = lessons.filter(
             Q(title__icontains=query) | 
             Q(description__icontains=query) |
-            Q(sub_category__name__icontains=query)
+            Q(sub_sub_category__name__icontains=query) |
+            Q(sub_sub_category__sub_category__name__icontains=query)
         )
     
     context = {
@@ -42,7 +43,7 @@ def course_list(request):
 def category_detail(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     lessons = Lesson.objects.filter(
-        sub_category__category=category,
+        sub_sub_category__sub_category__category=category,
         is_published=True
     ).order_by('-created_at')
     

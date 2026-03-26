@@ -8,11 +8,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Q
 
 from courses.models import (
-    Category, SubCategory, Lesson, Comment, Assignment,
+    Category, SubCategory, SubSubCategory, Lesson, Comment, Assignment,
     Submission, Enrollment, Certificate, LessonQuiz, QuizAttempt, LessonLike
 )
 from courses.serializers import (
-    CategorySerializer, SubCategorySerializer, LessonListSerializer, LessonDetailSerializer,
+    CategorySerializer, SubCategorySerializer, SubSubCategorySerializer, LessonListSerializer, LessonDetailSerializer,
     LessonCreateUpdateSerializer, CommentSerializer,
     AssignmentSerializer, SubmissionSerializer, EnrollmentSerializer,
     CertificateSerializer, LessonQuizSerializer, QuizAttemptSerializer
@@ -29,13 +29,13 @@ class IsSuperUser(BasePermission):
 # Base queryset for lessons — always select/prefetch related objects
 # ---------------------------------------------------------------------------
 LESSON_BASE_QS = Lesson.objects.select_related(
-    'sub_category__category', 'author'
+    'sub_sub_category__sub_category__category', 'author'
 ).prefetch_related('liked_by', 'saved_by', 'quiz_questions')
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.prefetch_related('subcategories').annotate(
-        _lessons_count=Count('subcategories__lessons', distinct=True)
+    queryset = Category.objects.prefetch_related('subcategories__sub_subcategories').annotate(
+        _lessons_count=Count('subcategories__sub_subcategories__lessons', distinct=True)
     )
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -67,10 +67,23 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
         return [IsAuthenticatedOrReadOnly()]
 
 
+class SubSubCategoryViewSet(viewsets.ModelViewSet):
+    queryset = SubSubCategory.objects.select_related('sub_category__category').all()
+    serializer_class = SubSubCategorySerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['sub_category']
+    search_fields = ['name']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsSuperUser()]
+        return [IsAuthenticatedOrReadOnly()]
+
+
 class LessonViewSet(viewsets.ModelViewSet):
     queryset = LESSON_BASE_QS
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['sub_category', 'level', 'author']
+    filterset_fields = ['sub_sub_category', 'level', 'author']
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'views', 'likes', 'title']
     ordering = ['-created_at']
@@ -154,7 +167,7 @@ class LessonViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def saved(self, request):
         lessons = request.user.saved_lessons.select_related(
-            'sub_category__category', 'author'
+            'sub_sub_category__sub_category__category', 'author'
         ).prefetch_related('liked_by', 'saved_by', 'quiz_questions')
 
         page = self.paginate_queryset(lessons)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from courses.models import (
-    Category, SubCategory, Lesson, Comment, Assignment,
+    Category, SubCategory, SubSubCategory, Lesson, Comment, Assignment,
     Submission, Certificate, LessonQuiz, QuizAttempt, Enrollment, LessonLike
 )
 from accounts.models import CustomUser
@@ -22,11 +22,20 @@ class UserBasicSerializer(serializers.ModelSerializer):
         return None
 
 
+class SubSubCategorySerializer(serializers.ModelSerializer):
+    """SubSubCategory serializer"""
+    class Meta:
+        model = SubSubCategory
+        fields = ['id', 'name', 'sub_category']
+
+
 class SubCategorySerializer(serializers.ModelSerializer):
-    """SubCategory serializer"""
+    """SubCategory serializer with nested sub-subcategories"""
+    sub_subcategories = SubSubCategorySerializer(many=True, read_only=True)
+
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'category']
+        fields = ['id', 'name', 'category', 'sub_subcategories']
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -40,7 +49,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     def get_lessons_count(self, obj):
         # Annotated value from queryset — no extra DB hit
-        return getattr(obj, '_lessons_count', None) or Lesson.objects.filter(sub_category__category=obj).count()
+        return getattr(obj, '_lessons_count', None) or Lesson.objects.filter(sub_sub_category__sub_category__category=obj).count()
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -146,7 +155,7 @@ class UserLessonContextMixin:
 
 class LessonListSerializer(UserLessonContextMixin, serializers.ModelSerializer):
     """Lesson list serializer with basic info"""
-    category = CategorySerializer(read_only=True, source='sub_category.category')
+    category = CategorySerializer(read_only=True, source='sub_sub_category.sub_category.category')
     author = UserBasicSerializer(read_only=True)
     thumbnail_url = serializers.SerializerMethodField()
     video_file_url = serializers.SerializerMethodField()
@@ -157,12 +166,13 @@ class LessonListSerializer(UserLessonContextMixin, serializers.ModelSerializer):
     progress = serializers.SerializerMethodField()
     last_watched_time = serializers.SerializerMethodField()
     certificate_id = serializers.SerializerMethodField()
-    sub_category_id = serializers.IntegerField(source='sub_category.id', read_only=True)
+    sub_category_id = serializers.IntegerField(source='sub_sub_category.sub_category.id', read_only=True)
+    sub_sub_category_id = serializers.IntegerField(source='sub_sub_category.id', read_only=True)
 
     class Meta:
         model = Lesson
         fields = [
-            'id', 'title', 'description', 'category', 'sub_category_id', 'author',
+            'id', 'title', 'description', 'category', 'sub_category_id', 'sub_sub_category_id', 'author',
             'thumbnail', 'thumbnail_url', 'video_url', 'video_file', 'video_file_url',
             'hls_url', 'hls_status',
             'duration', 'level', 'views', 'likes', 'is_liked', 'is_enrolled', 'is_saved',
@@ -302,7 +312,7 @@ class LessonCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = [
-            'id', 'title', 'description', 'sub_category', 'thumbnail',
+            'id', 'title', 'description', 'sub_sub_category', 'thumbnail',
             'video_url', 'video_file', 'duration', 'level'
         ]
         read_only_fields = ['id']
@@ -353,8 +363,9 @@ class CertificateSerializer(serializers.ModelSerializer):
     lesson_title = serializers.CharField(source='lesson.title', read_only=True)
     author_name = serializers.CharField(source='lesson.author.full_name', read_only=True)
     student_name = serializers.CharField(source='user.full_name', read_only=True)
-    category_name = serializers.CharField(source='lesson.sub_category.category.display_name', read_only=True)
-    subcategory_name = serializers.CharField(source='lesson.sub_category.name', read_only=True)
+    category_name = serializers.CharField(source='lesson.sub_sub_category.sub_category.category.display_name', read_only=True)
+    subcategory_name = serializers.CharField(source='lesson.sub_sub_category.sub_category.name', read_only=True)
+    sub_subcategory_name = serializers.CharField(source='lesson.sub_sub_category.name', read_only=True)
 
     class Meta:
         model = Certificate

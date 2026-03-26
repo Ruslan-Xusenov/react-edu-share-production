@@ -51,6 +51,22 @@ class SubCategory(models.Model):
         return f"{self.category.display_name} → {self.name}"
 
 
+class SubSubCategory(models.Model):
+    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='sub_subcategories')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Sub-Sub-Category'
+        verbose_name_plural = 'Sub-Sub-Categories'
+        ordering = ['sub_category', 'name']
+        unique_together = ['sub_category', 'name']
+
+    def __str__(self):
+        return f"{self.sub_category.category.display_name} → {self.sub_category.name} → {self.name}"
+
+
 class Lesson(models.Model):
     LEVEL_CHOICES = [
         ('beginner', 'Beginner'),
@@ -84,7 +100,11 @@ class Lesson(models.Model):
 
     thumbnail = models.ImageField(upload_to='lesson_thumbnails/', blank=True, null=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lessons_created')
-    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='lessons')
+    sub_sub_category = models.ForeignKey(
+        'SubSubCategory', on_delete=models.CASCADE, related_name='lessons',
+        null=True, blank=True,
+        help_text="Dars tegishli bo'lgan sub-subkategoriya"
+    )
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='beginner')
     duration = models.CharField(max_length=50, blank=True, help_text="e.g., '15 minutes'")
     
@@ -116,7 +136,7 @@ class Lesson(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['sub_category'], name='lesson_subcategory_idx'),
+            models.Index(fields=['sub_sub_category'], name='lesson_subsubcategory_idx'),
             models.Index(fields=['author'], name='lesson_author_idx'),
             models.Index(fields=['level'], name='lesson_level_idx'),
             models.Index(fields=['-views'], name='lesson_views_idx'),

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.core.exceptions import ValidationError
-from .models import Category, SubCategory, Lesson, Assignment, Submission, Certificate, LessonLike, LessonQuiz
+from .models import Category, SubCategory, SubSubCategory, Lesson, Assignment, Submission, Certificate, LessonLike, LessonQuiz
 
 
 @admin.register(Category)
@@ -10,10 +10,23 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ['display_name', 'name']
 
 
+class SubSubCategoryInline(admin.TabularInline):
+    model = SubSubCategory
+    extra = 1
+
+
 @admin.register(SubCategory)
 class SubCategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'created_at']
     list_filter = ['category']
+    search_fields = ['name']
+    inlines = [SubSubCategoryInline]
+
+
+@admin.register(SubSubCategory)
+class SubSubCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'sub_category', 'created_at']
+    list_filter = ['sub_category__category', 'sub_category']
     search_fields = ['name']
 
 
@@ -33,14 +46,14 @@ class LessonQuizInline(admin.TabularInline):
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ['title', 'author', 'sub_category', 'level', 'views', 'likes', 'is_published', 'has_test', 'created_at']
-    list_filter = ['level', 'is_published', 'sub_category__category', 'created_at']
+    list_display = ['title', 'author', 'sub_sub_category', 'level', 'views', 'likes', 'is_published', 'has_test', 'created_at']
+    list_filter = ['level', 'is_published', 'sub_sub_category__sub_category__category', 'sub_sub_category__sub_category', 'created_at']
     search_fields = ['title', 'description', 'author__full_name']
     readonly_fields = ['views', 'likes']
     inlines = [LessonQuizInline, AssignmentInline]
     fieldsets = (
         ('Asosiy ma\'lumotlar', {
-            'fields': ('title', 'description', 'author', 'sub_category', 'level', 'duration')
+            'fields': ('title', 'description', 'author', 'sub_sub_category', 'level', 'duration')
         }),
         ('Media', {
             'fields': ('video_url', 'video_file', 'thumbnail')

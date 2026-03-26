@@ -7,7 +7,7 @@ from crispy_forms.layout import Layout, Submit, Row, Column
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ['title', 'description', 'video_url', 'video_file', 'resource_file', 'thumbnail', 'sub_category', 'level', 'duration']
+        fields = ['title', 'description', 'video_url', 'video_file', 'resource_file', 'thumbnail', 'sub_sub_category', 'level', 'duration']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
             'title': forms.TextInput(attrs={'placeholder': 'Enter lesson title'}),

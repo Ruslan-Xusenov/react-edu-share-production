@@ -9,7 +9,6 @@ client = OpenAI(
   api_key=os.getenv('OPENROUTER_API_KEY'),
 )
 
-# Image input embeddings use multimodal content format
 embedding = client.embeddings.create(
   extra_headers={
     "HTTP-Referer": "https://edushare.uz",

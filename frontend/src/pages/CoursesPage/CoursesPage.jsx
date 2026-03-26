@@ -10,19 +10,32 @@ import './CoursesPage.css';
 
 const CoursesPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-    const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
+    const [view, setView] = useState('categories'); // 'categories', 'subcategories', 'subsubcategories', 'lessons'
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+    const [selectedSubSubCategory, setSelectedSubSubCategory] = useState(null);
     const [courses, setCourses] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
 
+    // Fetch Categories
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const res = await apiClient.get(API_ENDPOINTS.CATEGORIES);
-                // Handle different response formats
                 const cats = res.data.results || res.data || [];
                 setCategories(cats);
+                
+                // Handle pre-selected category from URL if any
+                const catSlug = searchParams.get('category');
+                if (catSlug && cats.length > 0) {
+                    const cat = cats.find(c => c.slug === catSlug);
+                    if (cat) {
+                        setSelectedCategory(cat);
+                        setView('subcategories');
+                    }
+                }
             } catch (error) {
                 console.error("Error fetching categories:", error);
             }
@@ -30,13 +43,19 @@ const CoursesPage = () => {
         fetchCategories();
     }, []);
 
+    // Fetch Lessons when reaching the final level
     useEffect(() => {
+        if (view !== 'lessons' && !searchQuery) return;
+
         const fetchCourses = async () => {
             setLoading(true);
             try {
                 let params = new URLSearchParams();
-                if (searchQuery) params.append('search', searchQuery);
-                if (selectedCategory !== 'all') params.append('category__slug', selectedCategory);
+                if (searchQuery) {
+                    params.append('search', searchQuery);
+                } else if (selectedSubSubCategory) {
+                    params.append('sub_sub_category', selectedSubSubCategory.id);
+                }
 
                 const res = await apiClient.get(`${API_ENDPOINTS.LESSONS}?${params.toString()}`);
                 const courseData = res.data.results || res.data || [];
@@ -47,9 +66,47 @@ const CoursesPage = () => {
                 setLoading(false);
             }
         };
-        const timeoutId = setTimeout(fetchCourses, 500);
+
+        const timeoutId = setTimeout(fetchCourses, searchQuery ? 500 : 0);
         return () => clearTimeout(timeoutId);
-    }, [searchQuery, selectedCategory]);
+    }, [view, selectedSubSubCategory, searchQuery]);
+
+    // Navigation Handlers
+    const handleCategoryClick = (cat) => {
+        setSelectedCategory(cat);
+        setView('subcategories');
+        setSearchParams({ category: cat.slug });
+    };
+
+    const handleSubCategoryClick = (sub) => {
+        setSelectedSubCategory(sub);
+        setView('subsubcategories');
+    };
+
+    const handleSubSubCategoryClick = (subSub) => {
+        setSelectedSubSubCategory(subSub);
+        setView('lessons');
+    };
+
+    const resetToCategories = () => {
+        setView('categories');
+        setSelectedCategory(null);
+        setSelectedSubCategory(null);
+        setSelectedSubSubCategory(null);
+        setSearchQuery('');
+        setSearchParams({});
+    };
+
+    const backToSubCategories = () => {
+        setView('subcategories');
+        setSelectedSubCategory(null);
+        setSelectedSubSubCategory(null);
+    };
+
+    const backToSubSubCategories = () => {
+        setView('subsubcategories');
+        setSelectedSubSubCategory(null);
+    };
 
     return (
         <div className="courses-page">
@@ -92,24 +149,86 @@ const CoursesPage = () => {
                             </div>
                         </div>
 
-                        <div className="categories-filter">
-                            <h3>MODULE TYPE</h3>
-                            <div className="filter-grid">
-                                <button
-                                    className={`category-btn ${selectedCategory === 'all' ? 'active' : ''}`}
-                                    onClick={() => setSelectedCategory('all')}
-                                >
-                                    ALL MODULES
-                                </button>
-                                {categories.map(cat => (
-                                    <button
-                                        key={cat.id || cat.slug}
-                                        className={`category-btn ${selectedCategory === cat.slug ? 'active' : ''}`}
-                                        onClick={() => setSelectedCategory(cat.slug)}
-                                    >
-                                        {cat.display_name || cat.name}
-                                    </button>
-                                ))}
+                        <div className="drill-down-navigation">
+                            {/* Breadcrumbs */}
+                            <div className="breadcrumbs-yt">
+                                <span onClick={resetToCategories}>MODULES</span>
+                                {selectedCategory && (
+                                    <span onClick={() => setView('subcategories')}>
+                                        / {selectedCategory.display_name || selectedCategory.name}
+                                    </span>
+                                )}
+                                {selectedSubCategory && (
+                                    <span onClick={() => setView('subsubcategories')}>
+                                        / {selectedSubCategory.name}
+                                    </span>
+                                )}
+                                {selectedSubSubCategory && (
+                                    <span>/ {selectedSubSubCategory.name}</span>
+                                )}
+                            </div>
+
+                            <div className="drill-down-content">
+                                {view === 'categories' && (
+                                    <div className="grid-selection-yt">
+                                        <h3>SELECT CATEGORY</h3>
+                                        <div className="filter-grid">
+                                            {categories.map(cat => (
+                                                <button
+                                                    key={cat.id}
+                                                    className="category-btn-large"
+                                                    onClick={() => handleCategoryClick(cat)}
+                                                >
+                                                    {cat.display_name || cat.name}
+                                                    <span className="count-badge">{cat.lessons_count} MODULES</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {view === 'subcategories' && selectedCategory && (
+                                    <div className="grid-selection-yt">
+                                        <h3>SELECT SPECIALIZATION</h3>
+                                        <div className="filter-grid">
+                                            {selectedCategory.subcategories?.map(sub => (
+                                                <button
+                                                    key={sub.id}
+                                                    className="category-btn-large"
+                                                    onClick={() => handleSubCategoryClick(sub)}
+                                                >
+                                                    {sub.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button className="btn-back-yt" onClick={resetToCategories}>BACK TO CATEGORIES</button>
+                                    </div>
+                                )}
+
+                                {view === 'subsubcategories' && selectedSubCategory && (
+                                    <div className="grid-selection-yt">
+                                        <h3>SELECT TOPIC</h3>
+                                        <div className="filter-grid">
+                                            {selectedSubCategory.sub_subcategories?.map(subSub => (
+                                                <button
+                                                    key={subSub.id}
+                                                    className="category-btn-large"
+                                                    onClick={() => handleSubSubCategoryClick(subSub)}
+                                                >
+                                                    {subSub.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button className="btn-back-yt" onClick={backToSubCategories}>BACK TO SPECIALIZATIONS</button>
+                                    </div>
+                                )}
+
+                                {view === 'lessons' && (
+                                    <div className="lessons-header-yt">
+                                        <h3>{selectedSubSubCategory?.name} MODULES</h3>
+                                        <button className="btn-back-yt" onClick={backToSubSubCategories}>CHANGE TOPIC</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </motion.div>
@@ -123,37 +242,47 @@ const CoursesPage = () => {
                                 <div className="loader-line"></div>
                                 <h3>SYNCHRONIZING...</h3>
                             </div>
-                        ) : courses.length > 0 ? (
-                            <div className="courses-vertical-list">
-                                {courses.map((course, i) => (
-                                    <motion.div
-                                        key={course.id}
-                                        className="course-card-yt"
-                                        initial={{ opacity: 0, y: 30 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.1 }}
-                                    >
-                                        <div className="course-image-yt">
-                                            <img
-                                                src={course.thumbnail_url || `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=600&h=400&fit=crop&q=60`}
-                                                alt={course.title}
-                                                loading="lazy"
-                                                width="600"
-                                                height="400"
-                                            />
-                                            <div className="category-tag-yt">{course.category?.display_name || 'GENERAL'}</div>
-                                        </div>
-                                        <div className="course-info-yt">
-                                            <h3>{course.title}</h3>
-                                            <Link to={`/courses/${course.id}`} className="btn-load-yt">
-                                                LOAD MODULE <FaFilter />
-                                            </Link>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                        ) : searchQuery || view === 'lessons' ? (
+                            courses.length > 0 ? (
+                                <div className="courses-vertical-list">
+                                    {courses.map((course, i) => (
+                                        <motion.div
+                                            key={course.id}
+                                            className="course-card-yt"
+                                            initial={{ opacity: 0, y: 30 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.1 }}
+                                        >
+                                            <div className="course-image-yt">
+                                                <img
+                                                    src={course.thumbnail_url || `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=600&h=400&fit=crop&q=60`}
+                                                    alt={course.title}
+                                                    loading="lazy"
+                                                    width="600"
+                                                    height="400"
+                                                />
+                                                <div className="category-tag-yt">{course.sub_sub_category?.name || 'GENERAL'}</div>
+                                            </div>
+                                            <div className="course-info-yt">
+                                                <h3>{course.title}</h3>
+                                                <Link to={`/courses/${course.id}`} className="btn-load-yt">
+                                                    LOAD MODULE <FaFilter />
+                                                </Link>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="no-results"><h3>NO MODULES FOUND.</h3></div>
+                            )
                         ) : (
-                            <div className="no-results"><h3>NO MODULES FOUND.</h3></div>
+                            <div className="awaiting-selection-yt">
+                                <div className="selection-visual">
+                                    <div className="circle-pulsate"></div>
+                                </div>
+                                <h3>AWAITING<br />SELECTION</h3>
+                                <p>SELECT A MODULE FROM THE HIERARCHY TO INITIALIZE FEED.</p>
+                            </div>
                         )}
                     </div>
                 </div>
