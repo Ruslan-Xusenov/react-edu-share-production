@@ -83,7 +83,13 @@ class SubSubCategoryViewSet(viewsets.ModelViewSet):
 class LessonViewSet(viewsets.ModelViewSet):
     queryset = LESSON_BASE_QS
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['sub_sub_category', 'level', 'author']
+    filterset_fields = {
+        'sub_sub_category': ['exact'],
+        'sub_sub_category__sub_category': ['exact'],
+        'sub_sub_category__sub_category__category': ['exact'],
+        'level': ['exact'],
+        'author': ['exact'],
+    }
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'views', 'likes', 'title']
     ordering = ['-created_at']
@@ -110,12 +116,17 @@ class LessonViewSet(viewsets.ModelViewSet):
     # ------------------------------------------------------------------
     def get_serializer(self, *args, **kwargs):
         serializer = super().get_serializer(*args, **kwargs)
-        # Only for list actions returning multiple lessons
+        
+        # Determine the effective serializer (individual or child of list)
+        from rest_framework.serializers import ListSerializer
+        target = serializer.child if isinstance(serializer, ListSerializer) else serializer
+
+        # Only for list/enrolled actions returning multiple lessons (exclude single actions)
         if self.action not in ('retrieve', 'create', 'update', 'partial_update') and args:
             lessons = args[0]
-            if hasattr(serializer, '_inject_user_context') and hasattr(lessons, '__iter__'):
+            if hasattr(target, '_inject_user_context') and hasattr(lessons, '__iter__'):
                 lessons_list = list(lessons)
-                serializer._inject_user_context(self.request, lessons_list)
+                target._inject_user_context(self.request, lessons_list)
         return serializer
 
     @method_decorator(ensure_csrf_cookie)
@@ -538,7 +549,7 @@ class CertificateViewSet(viewsets.ReadOnlyModelViewSet):
     API endpoint for viewing certificates.
     """
     queryset = Certificate.objects.select_related(
-        'user', 'lesson__author', 'lesson__sub_category__category'
+        'user', 'lesson__author', 'lesson__sub_sub_category__sub_category__category'
     ).all()
     serializer_class = CertificateSerializer
     permission_classes = [IsAuthenticated]

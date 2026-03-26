@@ -197,9 +197,7 @@ class AdvancedSecurityMiddleware:
         
         response = self.get_response(request)
         
-        if not hasattr(response, 'headers'):
-            return response
-            
+        # Ensure security headers are ALWAYS set (standard dict indexing is safest)
         response['X-Content-Type-Options'] = 'nosniff'
         response['X-Frame-Options'] = 'DENY'
         response['X-XSS-Protection'] = '1; mode=block'
@@ -236,11 +234,26 @@ class AdvancedSecurityMiddleware:
                 return True
         
         if request.method == 'POST':
+            # 1. Form data
             for key, value in request.POST.items():
                 if key in ['q', 'search', 'query']:
                     continue
                 if isinstance(value, str) and check_sql_injection(value):
                     return True
+            
+            # 2. JSON Body (Crucial for API login/signup)
+            if request.content_type == 'application/json' and request.body:
+                try:
+                    import json
+                    data = json.loads(request.body)
+                    if isinstance(data, dict):
+                        for key, value in data.items():
+                            if key in ['q', 'search', 'query']:
+                                continue
+                            if isinstance(value, str) and check_sql_injection(value):
+                                return True
+                except:
+                    pass
         
         return False
     
@@ -254,9 +267,22 @@ class AdvancedSecurityMiddleware:
                 return True
         
         if request.method == 'POST':
+            # 1. Form data
             for key, value in request.POST.items():
                 if isinstance(value, str) and check_xss_attack(value):
                     return True
+                    
+            # 2. JSON Body
+            if request.content_type == 'application/json' and request.body:
+                try:
+                    import json
+                    data = json.loads(request.body)
+                    if isinstance(data, dict):
+                        for key, value in data.items():
+                            if isinstance(value, str) and check_xss_attack(value):
+                                return True
+                except:
+                    pass
         
         return False
     
@@ -356,25 +382,28 @@ class AdvancedSecurityMiddleware:
         cache_key = f'rate_limit_{ip_address}'
         requests = cache.get(cache_key, 0)
         
-        sensitive_paths = ['/accounts/login/', '/accounts/signup/', '/admin/']
+        # Enforce rate limits based on path sensitivity
+        sensitive_paths = ['/accounts/login/', '/accounts/signup/', '/api/accounts/login/', '/api/accounts/signup/', '/admin/', '/api/auth/']
         is_sensitive = any(path.startswith(p) for p in sensitive_paths)
-        
         is_api = path.startswith('/api/')
         
         if is_sensitive:
-            max_requests = 100  # 10 orni-ga 100 (yumshatildi)
+            max_requests = 5  # Strict 5/min for login/signup
             window = 60
         elif is_api:
-            max_requests = 150 # 50 orni-ga 150
+            max_requests = 100 # 100/min for API
             window = 60
         else:
-            max_requests = 300 # 120 orni-ga 300
+            max_requests = 100 # 100/min global limit
             window = 60
         
         if requests >= max_requests:
-            self.increment_block_attempt(ip_address)
+            # Only block if we haven't already
+            if requests == max_requests:
+                self.increment_block_attempt(ip_address)
             return False
         
+        # Consistent cache window
         cache.set(cache_key, requests + 1, window)
         return True
     

@@ -12,12 +12,14 @@ SQL_INJECTION_PATTERNS = [
     r"(\bdelete\b.*\bfrom\b)",
     r"(\bdrop\b.*\btable\b)",
     r"(\bexec\b|\bexecute\b)",
-    r"(\bor\b.*=.*)",
-    r"(\band\b.*=.*)",
-    r"(--|#|/\*|\*/)",
+    r"(['\"]?\s*or\s*['\"]?.*[=<>!])", # Catch ' OR '1'='1 or 1=1
+    r"(['\"]?\s*and\s*['\"]?.*[=<>!])", # Catch ' AND '1'='1 or 1=1
+    r"(--|#|/\*|\*/|\x00|\x1a)", # Comments and null bytes
     r"(\bxp_cmdshell\b)",
     r"(\bsp_executesql\b)",
     r"(\bshutdown\b)",
+    r"(\bsleep\s*\(.*\))", # Time-based injection
+    r"(\bbenchmark\s*\(.*\))", # Time-based injection
 ]
 
 XSS_PATTERNS = [

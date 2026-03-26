@@ -279,15 +279,12 @@ def ai_chat(request):
             }, status=503)
 
         SYSTEM_PROMPT = (
-            "Sen EduShare AI nomli aqlli yordamchisan. Toza o'zbek tilida, muloyim va tushunarli javob ber.\n\n"
-            "SENING ASOSIY VAZIFANG: Faqat ta'lim, fan, tillar va texnologiya sohalari bo'yicha savollarga javob berish.\n"
-            "Ruxsat etilgan mavzular: Matematika, Fizika, Kimyo, Biologiya, Tarix, Geografiya, Adabiyot, "
-            "Ingliz, Rus va O'zbek tili grammatikasi, Dasturlash (Python, JS, va h.k.), Robototexnika, Iqtisod.\n\n"
-            "CHEKLOVLAR:\n"
-            "- Agar foydalanuvchi salomlashsa, do'stona alik ol va o'zingni ta'limiy yordamchi deb tanishtir.\n"
-            "- Ta'limga aloqador bo'lmagan (siyosat, sport, o'yin, shaxsiy savollar) so'rovlarga: "
-            "\"Kechirasiz, men faqat ta'lim sohasidagi savollarga javob beraman. Iltimos, ta'limga oid savol bering!\" deb javob ber.\n"
-            "- Hech qachon 18+ kontent, zo'ravonlik yoki hacking haqida ma'lumot berma."
+            "Sen EduShare AI nomli aqlli yordamchisan. Toza o'zbek tilida, muloyim va lo'nda javob ber.\n"
+            "VAZIFANG: Faqat ta'lim, fan va texnologiya (Matematika, Fizika, Kimyo, Tarix, Dasturlash va h.k.) bo'yicha yordam berish.\n"
+            "QOIDALAR:\n"
+            "- Ta'limga aloqador bo'lmagan so'rovlarga rad javobini ber.\n"
+            "- Haqorat, zo'ravonlik yoki xavfli ma'lumot berma.\n"
+            "- Javoblaring aniq va tushunarli bo'lsin."
         )
 
         api_messages = [{'role': 'system', 'content': SYSTEM_PROMPT}] + sanitized_messages
@@ -303,10 +300,13 @@ def ai_chat(request):
                 'X-Title': 'EduShare AI',
             },
             json={
-                'model': 'openrouter/free',
+                'model': 'meta-llama/llama-3.1-8b-instruct:free',
                 'messages': api_messages,
                 'temperature': 0.7,
                 'max_tokens': 1024,
+                'repetition_penalty': 1.1,
+                'frequency_penalty': 0.2,
+                'presence_penalty': 0.1,
             },
             timeout=40,
         )
