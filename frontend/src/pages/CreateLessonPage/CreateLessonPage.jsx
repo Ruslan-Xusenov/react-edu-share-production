@@ -16,6 +16,8 @@ const CreateLessonPage = () => {
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [subcategories, setSubcategories] = useState([]);
+    const [selectedSubCategory, setSelectedSubCategory] = useState('');
+    const [subsubcategories, setSubsubcategories] = useState([]);
     const [videoMode, setVideoMode] = useState('url'); // 'url' or 'file'
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -25,10 +27,15 @@ const CreateLessonPage = () => {
     const [newSubName, setNewSubName] = useState('');
     const [addingSubLoading, setAddingSubLoading] = useState(false);
 
+    // Sub-Subcategory creation state
+    const [isAddingSubSub, setIsAddingSubSub] = useState(false);
+    const [newSubSubName, setNewSubSubName] = useState('');
+    const [addingSubSubLoading, setAddingSubSubLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        sub_category: '',
+        sub_sub_category: '', // Matches backend Model
         level: 'beginner',
         duration: '',
         video_url: '',
@@ -102,11 +109,25 @@ const CreateLessonPage = () => {
         if (selectedCategory) {
             const cat = categories.find(c => String(c.id) === String(selectedCategory));
             setSubcategories(cat?.subcategories || []);
-            setFormData(prev => ({ ...prev, sub_category: '' }));
+            setSelectedSubCategory('');
+            setSubsubcategories([]);
+            setFormData(prev => ({ ...prev, sub_sub_category: '' }));
         } else {
             setSubcategories([]);
+            setSubsubcategories([]);
         }
     }, [selectedCategory, categories]);
+
+    // Update sub-subcategories when subcategory changes
+    useEffect(() => {
+        if (selectedSubCategory) {
+            const sub = subcategories.find(s => String(s.id) === String(selectedSubCategory));
+            setSubsubcategories(sub?.sub_subcategories || []);
+            setFormData(prev => ({ ...prev, sub_sub_category: '' }));
+        } else {
+            setSubsubcategories([]);
+        }
+    }, [selectedSubCategory, subcategories]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -120,21 +141,18 @@ const CreateLessonPage = () => {
 
     const handleAddSubCategory = async () => {
         if (!newSubName.trim() || !selectedCategory) return;
-
         setAddingSubLoading(true);
         try {
             const res = await apiClient.post(API_ENDPOINTS.SUBCATEGORIES, {
                 name: newSubName,
                 category: selectedCategory
             });
-
             if (res.data) {
                 const newSub = res.data;
                 setSubcategories(prev => [...prev, newSub]);
-                setFormData(prev => ({ ...prev, sub_category: newSub.id }));
+                setSelectedSubCategory(newSub.id);
                 setNewSubName('');
                 setIsAddingSub(false);
-
                 const catRes = await apiClient.get(API_ENDPOINTS.CATEGORIES);
                 setCategories(catRes.data.results || catRes.data);
             }
@@ -143,6 +161,31 @@ const CreateLessonPage = () => {
             alert('Sub-kategoriyani yaratishda xatolik yuz berdi.');
         } finally {
             setAddingSubLoading(false);
+        }
+    };
+
+    const handleAddSubSubCategory = async () => {
+        if (!newSubSubName.trim() || !selectedSubCategory) return;
+        setAddingSubSubLoading(true);
+        try {
+            const res = await apiClient.post(API_ENDPOINTS.SUBSUBCATEGORIES, {
+                name: newSubSubName,
+                sub_category: selectedSubCategory
+            });
+            if (res.data) {
+                const newSubSub = res.data;
+                setSubsubcategories(prev => [...prev, newSubSub]);
+                setFormData(prev => ({ ...prev, sub_sub_category: newSubSub.id }));
+                setNewSubSubName('');
+                setIsAddingSubSub(false);
+                const catRes = await apiClient.get(API_ENDPOINTS.CATEGORIES);
+                setCategories(catRes.data.results || catRes.data);
+            }
+        } catch (err) {
+            console.error('Failed to create sub-sub-category:', err);
+            alert('Sohani yaratishda xatolik yuz berdi.');
+        } finally {
+            setAddingSubSubLoading(false);
         }
     };
 
@@ -155,7 +198,7 @@ const CreateLessonPage = () => {
             const data = new FormData();
             data.append('title', formData.title);
             data.append('description', formData.description);
-            data.append('sub_category', formData.sub_category);
+            data.append('sub_sub_category', formData.sub_sub_category); 
             data.append('level', formData.level);
             data.append('duration', formData.duration);
 
@@ -164,18 +207,15 @@ const CreateLessonPage = () => {
             } else if (videoMode === 'file' && formData.video_file) {
                 data.append('video_file', formData.video_file);
             }
-
             if (formData.thumbnail) {
                 data.append('thumbnail', formData.thumbnail);
             }
 
-            // 1. Create Lesson — increased timeout for large video files
             const lessonRes = await apiClient.post(API_ENDPOINTS.LESSONS, data, {
-                timeout: 600000 // 10 minutes
+                timeout: 600000 
             });
             const lessonId = lessonRes.data.id;
 
-            // 2. Create Quiz Questions if any
             if (quizQuestions.length > 0) {
                 for (const q of quizQuestions) {
                     await apiClient.post(API_ENDPOINTS.QUIZ_QUESTIONS, {
@@ -186,20 +226,15 @@ const CreateLessonPage = () => {
             }
 
             setSuccess(true);
-            setTimeout(() => {
-                navigate(`/courses/${lessonId}`);
-            }, 1500);
+            setTimeout(() => navigate(`/courses/${lessonId}`), 1500);
         } catch (err) {
-            console.error('Create lesson error:', err);
+            console.error('Create error:', err);
             const detail = err.response?.data;
             if (typeof detail === 'object') {
-                const messages = Object.entries(detail).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`);
-                setError(messages.join('\n'));
-            } else if (typeof detail === 'string' && detail.includes('<!DOCTYPE')) {
-                // API returned HTML (e.g., Django 404/500 error page) — show friendly message
-                setError(`Server xatoligi (${err.response?.status || 'noma\'lum'}). Iltimos qaytadan urinib ko'ring.`);
+                const msgs = Object.entries(detail).map(([k, v]) => `${k}: ${v}`);
+                setError(msgs.join('\n'));
             } else {
-                setError(detail || 'Darsni yaratishda xatolik yuz berdi.');
+                setError(detail || 'Xatolik yuz berdi.');
             }
         } finally {
             setLoading(false);
@@ -207,339 +242,121 @@ const CreateLessonPage = () => {
     };
 
     return (
-        <>
-            <Helmet>
-                <title>Yangi Dars Yaratish — EduShare School</title>
-                <meta name="description" content="EduShare School platformasida yangi dars yarating va bilimingizni boshqalar bilan ulashing." />
-                <meta name="robots" content="noindex, nofollow" />
-            </Helmet>
+        <div className="create-lesson-page">
+            <Helmet><title>Yangi Dars Yaratish — EduShare</title></Helmet>
+            <div className="container">
+                <motion.div initial={{opacity:0}} animate={{opacity:1}} className="create-lesson-header">
+                    <FaPlusCircle className="header-icon" />
+                    <h1>Yangi Dars Yaratish</h1>
+                </motion.div>
 
-            <div className="create-lesson-page">
-                <div className="create-lesson-bg">
-                    <div className="bg-orb bg-orb-1"></div>
-                    <div className="bg-orb bg-orb-2"></div>
-                    <div className="bg-orb bg-orb-3"></div>
-                </div>
+                <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="create-lesson-card">
+                    {success ? (
+                        <div className="success-message"><h2>Muvaffaqiyatli yaratildi!</h2></div>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="create-lesson-form">
+                            {error && <div className="form-error">{error}</div>}
+                            
+                            <div className="form-section">
+                                <h3 className="section-title"><FaHeading /> Asosiy ma'lumotlar</h3>
+                                <div className="form-group">
+                                    <label>Dars nomi</label>
+                                    <input type="text" name="title" value={formData.title} onChange={handleChange} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Tavsif</label>
+                                    <textarea name="description" value={formData.description} onChange={handleChange} rows={4} required />
+                                </div>
 
-                <div className="container">
-                    <motion.div
-                        className="create-lesson-header"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <FaPlusCircle className="header-icon" />
-                        <h1>Yangi Dars Yaratish</h1>
-                        <p>Bilimingizni boshqalar bilan ulashing</p>
-                    </motion.div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Yo'nalish (Kategoriya)</label>
+                                        <select value={selectedCategory} onChange={(e)=>setSelectedCategory(e.target.value)} required>
+                                            <option value="">Kategoriyani tanlang</option>
+                                            {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.display_name || cat.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <div className="label-with-action">
+                                            <label>Mutaxassislik</label>
+                                            {selectedCategory && !isAddingSub && <button type="button" className="inline-action-btn" onClick={()=>setIsAddingSub(true)}><FaPlusCircle /> Yangi</button>}
+                                        </div>
+                                        {isAddingSub ? (
+                                            <div className="inline-add-form">
+                                                <input type="text" value={newSubName} onChange={(e)=>setNewSubName(e.target.value)} autoFocus />
+                                                <button type="button" onClick={handleAddSubCategory} disabled={addingSubLoading}><FaCheck /></button>
+                                                <button type="button" onClick={()=>setIsAddingSub(false)}>&times;</button>
+                                            </div>
+                                        ) : (
+                                            <select value={selectedSubCategory} onChange={(e)=>setSelectedSubCategory(e.target.value)} disabled={!selectedCategory} required>
+                                                <option value="">Tanlang</option>
+                                                {subcategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                            </select>
+                                        )}
+                                    </div>
+                                </div>
 
-                    <motion.div
-                        className="create-lesson-card"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.15 }}
-                    >
-                        {success ? (
-                            <div className="success-message">
-                                <div className="success-icon"><FaCheck /></div>
-                                <h2>Dars muvaffaqiyatli yaratildi!</h2>
-                                <p>Siz tez orada dars sahifasiga yo'naltirilasiz...</p>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <div className="label-with-action">
+                                            <label>Soha (Topic)</label>
+                                            {selectedSubCategory && !isAddingSubSub && <button type="button" className="inline-action-btn" onClick={()=>setIsAddingSubSub(true)}><FaPlusCircle /> Yangi</button>}
+                                        </div>
+                                        {isAddingSubSub ? (
+                                            <div className="inline-add-form">
+                                                <input type="text" value={newSubSubName} onChange={(e)=>setNewSubSubName(e.target.value)} autoFocus />
+                                                <button type="button" onClick={handleAddSubSubCategory} disabled={addingSubSubLoading}><FaCheck /></button>
+                                                <button type="button" onClick={()=>setIsAddingSubSub(false)}>&times;</button>
+                                            </div>
+                                        ) : (
+                                            <select name="sub_sub_category" value={formData.sub_sub_category} onChange={handleChange} disabled={!selectedSubCategory} required>
+                                                <option value="">Tanlang</option>
+                                                {subsubcategories.map(ss => <option key={ss.id} value={ss.id}>{ss.name}</option>)}
+                                            </select>
+                                        )}
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Daraja</label>
+                                        <select name="level" value={formData.level} onChange={handleChange}>
+                                            <option value="beginner">Boshlang'ich</option>
+                                            <option value="intermediate">O'rta</option>
+                                            <option value="advanced">Yuqori</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        ) : (
-                            <form onSubmit={handleSubmit} className="create-lesson-form">
-                                {error && (
-                                    <div className="form-error">
-                                        {error}
+
+                            <div className="form-section">
+                                <h3 className="section-title"><FaLink /> Media</h3>
+                                <div className="video-mode-selector">
+                                    <button type="button" className={videoMode==='url'?'active':''} onClick={()=>setVideoMode('url')}>YouTube Link</button>
+                                    <button type="button" className={videoMode==='file'?'active':''} onClick={()=>setVideoMode('file')}>Video Yuklash</button>
+                                </div>
+                                {videoMode==='url' ? (
+                                    <input type="url" name="video_url" value={formData.video_url} onChange={handleChange} placeholder="YouTube URL..." />
+                                ) : (
+                                    <div className="file-upload-box">
+                                        <input type="file" name="video_file" onChange={handleFileChange} accept="video/*" />
+                                        <label><FaUpload /> {formData.video_file ? formData.video_file.name : 'Video fayl'}</label>
                                     </div>
                                 )}
-
-                                {/* Main Details Section */}
-                                <div className="form-section">
-                                    <h3 className="section-title"><FaHeading /> Asosiy ma'lumotlar</h3>
-
-                                    <div className="form-group">
-                                        <label htmlFor="title">Dars nomi</label>
-                                        <input
-                                            type="text"
-                                            id="title"
-                                            name="title"
-                                            value={formData.title}
-                                            onChange={handleChange}
-                                            placeholder="Masalan: Python dasturlash asoslari"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="description">Tavsif</label>
-                                        <textarea
-                                            id="description"
-                                            name="description"
-                                            value={formData.description}
-                                            onChange={handleChange}
-                                            placeholder="Dars haqida batafsil ma'lumot yozing..."
-                                            rows={5}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label htmlFor="category">Kategoriya</label>
-                                            <select
-                                                id="category"
-                                                value={selectedCategory}
-                                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                                required
-                                            >
-                                                <option value="">Kategoriyani tanlang</option>
-                                                {categories.map(cat => (
-                                                    <option key={cat.id} value={cat.id}>
-                                                        {cat.display_name || cat.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="form-group sub-category-group">
-                                            <div className="label-with-action">
-                                                <label htmlFor="sub_category">Sub-kategoriya</label>
-                                                {selectedCategory && !isAddingSub && (
-                                                    <button
-                                                        type="button"
-                                                        className="inline-action-btn"
-                                                        onClick={() => setIsAddingSub(true)}
-                                                    >
-                                                        <FaPlusCircle /> Yangi
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {isAddingSub ? (
-                                                <div className="inline-add-form">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Nomi"
-                                                        value={newSubName}
-                                                        onChange={(e) => setNewSubName(e.target.value)}
-                                                        autoFocus
-                                                    />
-                                                    <div className="inline-add-actions">
-                                                        <button
-                                                            type="button"
-                                                            className="btn-save-inline"
-                                                            onClick={handleAddSubCategory}
-                                                            disabled={addingSubLoading || !newSubName.trim()}
-                                                        >
-                                                            {addingSubLoading ? <FaSpinner className="spin" /> : <FaCheck />}
-                                                        </button>
-                                                        <button type="button" className="btn-cancel-inline" onClick={() => setIsAddingSub(false)}>&times;</button>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <select
-                                                    id="sub_category"
-                                                    name="sub_category"
-                                                    value={formData.sub_category}
-                                                    onChange={handleChange}
-                                                    required
-                                                    disabled={!selectedCategory}
-                                                >
-                                                    <option value="">Sub-kategoriyani tanlang</option>
-                                                    {subcategories.map(sub => (
-                                                        <option key={sub.id} value={sub.id}>
-                                                            {sub.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label htmlFor="level">Daraja</label>
-                                            <select id="level" name="level" value={formData.level} onChange={handleChange}>
-                                                <option value="beginner">Boshlang'ich</option>
-                                                <option value="intermediate">O'rta</option>
-                                                <option value="advanced">Yuqori</option>
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="duration">Davomiylik</label>
-                                            <input
-                                                type="text"
-                                                id="duration"
-                                                name="duration"
-                                                value={formData.duration}
-                                                onChange={handleChange}
-                                                placeholder="Masalan: 15 daqiqa"
-                                            />
-                                        </div>
+                                <div className="form-group" style={{marginTop:'1.5rem'}}>
+                                    <label>Thumbnail</label>
+                                    <div className="file-upload-box">
+                                        <input type="file" name="thumbnail" onChange={handleFileChange} accept="image/*" />
+                                        <label><FaImage /> {formData.thumbnail ? formData.thumbnail.name : 'Rasm tanlang'}</label>
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Video & Media Section */}
-                                <div className="form-section">
-                                    <h3 className="section-title"><FaLink /> Media fayllar</h3>
-
-                                    <div className="video-mode-selector">
-                                        <button
-                                            type="button"
-                                            className={videoMode === 'url' ? 'active' : ''}
-                                            onClick={() => setVideoMode('url')}
-                                        >
-                                            YouTube Link
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={videoMode === 'file' ? 'active' : ''}
-                                            onClick={() => setVideoMode('file')}
-                                        >
-                                            Video Yuklash
-                                        </button>
-                                    </div>
-
-                                    {videoMode === 'url' ? (
-                                        <div className="form-group">
-                                            <input
-                                                type="url"
-                                                id="video_url"
-                                                name="video_url"
-                                                value={formData.video_url}
-                                                onChange={handleChange}
-                                                placeholder="https://www.youtube.com/watch?v=..."
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="form-group">
-                                            <div className="file-upload-box">
-                                                <input
-                                                    type="file"
-                                                    id="video_file"
-                                                    name="video_file"
-                                                    onChange={handleFileChange}
-                                                    accept="video/*"
-                                                />
-                                                <label htmlFor="video_file">
-                                                    <FaUpload /> {formData.video_file ? formData.video_file.name : 'Video faylni tanlang'}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="form-group">
-                                        <label>Thumbnail (Muqova rasmi)</label>
-                                        <div className="file-upload-box">
-                                            <input
-                                                type="file"
-                                                id="thumbnail"
-                                                name="thumbnail"
-                                                onChange={handleFileChange}
-                                                accept="image/*"
-                                            />
-                                            <label htmlFor="thumbnail">
-                                                <FaImage /> {formData.thumbnail ? formData.thumbnail.name : 'Rasm tanlang'}
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Quiz Section */}
-                                <div className="form-section quiz-section">
-                                    <div className="section-header">
-                                        <h3 className="section-title"><FaQuestionCircle /> Test Savollari (ixtiyoriy)</h3>
-                                        <button type="button" className="btn-add-question" onClick={addQuestion}>
-                                            <FaPlusCircle /> Savol qo'shish
-                                        </button>
-                                    </div>
-
-                                    <div className="questions-list">
-                                        {quizQuestions.map((q, index) => (
-                                            <div key={index} className="question-item-card">
-                                                <div className="q-header">
-                                                    <span>Savol #{index + 1}</span>
-                                                    <button type="button" className="btn-remove-q" onClick={() => removeQuestion(index)}>
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
-
-                                                <div className="form-group">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Savol matni..."
-                                                        value={q.question_text}
-                                                        onChange={(e) => updateQuestion(index, 'question_text', e.target.value)}
-                                                        required
-                                                    />
-                                                </div>
-
-                                                <div className="options-grid">
-                                                    <div className={`option-input-wrap ${q.correct_answer === 'A' ? 'is-correct' : ''}`}>
-                                                        <span>A</span>
-                                                        <input
-                                                            type="text"
-                                                            value={q.option_a}
-                                                            onChange={(e) => updateQuestion(index, 'option_a', e.target.value)}
-                                                            placeholder="A variant matni"
-                                                            required
-                                                        />
-                                                        <button type="button" onClick={() => updateQuestion(index, 'correct_answer', 'A')}>
-                                                            <FaCheckCircle />
-                                                        </button>
-                                                    </div>
-                                                    <div className={`option-input-wrap ${q.correct_answer === 'B' ? 'is-correct' : ''}`}>
-                                                        <span>B</span>
-                                                        <input
-                                                            type="text"
-                                                            value={q.option_b}
-                                                            onChange={(e) => updateQuestion(index, 'option_b', e.target.value)}
-                                                            placeholder="B variant matni"
-                                                            required
-                                                        />
-                                                        <button type="button" onClick={() => updateQuestion(index, 'correct_answer', 'B')}>
-                                                            <FaCheckCircle />
-                                                        </button>
-                                                    </div>
-                                                    <div className={`option-input-wrap ${q.correct_answer === 'C' ? 'is-correct' : ''}`}>
-                                                        <span>C</span>
-                                                        <input
-                                                            type="text"
-                                                            value={q.option_c}
-                                                            onChange={(e) => updateQuestion(index, 'option_c', e.target.value)}
-                                                            placeholder="C variant (ixtiyoriy)"
-                                                        />
-                                                        <button type="button" onClick={() => updateQuestion(index, 'correct_answer', 'C')}>
-                                                            <FaCheckCircle />
-                                                        </button>
-                                                    </div>
-                                                    <div className={`option-input-wrap ${q.correct_answer === 'D' ? 'is-correct' : ''}`}>
-                                                        <span>D</span>
-                                                        <input
-                                                            type="text"
-                                                            value={q.option_d}
-                                                            onChange={(e) => updateQuestion(index, 'option_d', e.target.value)}
-                                                            placeholder="D variant (ixtiyoriy)"
-                                                        />
-                                                        <button type="button" onClick={() => updateQuestion(index, 'correct_answer', 'D')}>
-                                                            <FaCheckCircle />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <button type="submit" className="btn-submit" disabled={loading}>
-                                    {loading ? <><FaSpinner className="spin" /> Saqlanmoqda...</> : <><FaCheck /> Darsni Yaratish</>}
-                                </button>
-                            </form>
-                        )}
-                    </motion.div>
-                </div>
+                            <button type="submit" className="btn-submit" disabled={loading}>
+                                {loading ? <FaSpinner className="spin" /> : 'Darsni Yaratish'}
+                            </button>
+                        </form>
+                    )}
+                </motion.div>
             </div>
-        </>
+        </div>
     );
 };
 

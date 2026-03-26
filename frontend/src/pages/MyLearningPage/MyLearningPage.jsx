@@ -16,7 +16,9 @@ const MyLearningPage = () => {
                 // In this architecture, submissions or certificates might represent learning progress
                 // Let's check for submissions first as it's the closest to 'enrolled'
                 const res = await apiClient.get(`${API_ENDPOINTS.LESSONS}enrolled/`);
-                setEnrolledCourses(res.data.results || []);
+                // Handle both paginated and non-paginated responses
+                const lessons = res.data.results || res.data || [];
+                setEnrolledCourses(lessons);
             } catch (error) {
                 console.error("Error fetching enrolled courses:", error);
                 // Fallback to empty if not implemented yet or 404

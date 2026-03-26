@@ -84,6 +84,7 @@ export const API_ENDPOINTS = {
     LEADERBOARD: '/accounts/leaderboard/',
     CATEGORIES: '/categories/',
     SUBCATEGORIES: '/subcategories/',
+    SUBSUBCATEGORIES: '/sub-sub-categories/',
     // Lessons (canonical)
     LESSONS: '/lessons/',
     LESSON_DETAIL: (id) => `/lessons/${id}/`,

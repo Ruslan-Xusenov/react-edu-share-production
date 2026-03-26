@@ -43,9 +43,9 @@ const CoursesPage = () => {
         fetchCategories();
     }, []);
 
-    // Fetch Lessons when reaching the final level
+    // Fetch Lessons (Default to all, or filtered)
     useEffect(() => {
-        if (view !== 'lessons' && !searchQuery) return;
+        // We fetch by default now to avoid blank screen
 
         const fetchCourses = async () => {
             setLoading(true);
@@ -55,6 +55,10 @@ const CoursesPage = () => {
                     params.append('search', searchQuery);
                 } else if (selectedSubSubCategory) {
                     params.append('sub_sub_category', selectedSubSubCategory.id);
+                } else if (selectedSubCategory) {
+                    params.append('sub_sub_category__sub_category', selectedSubCategory.id);
+                } else if (selectedCategory) {
+                    params.append('sub_sub_category__sub_category__category', selectedCategory.id);
                 }
 
                 const res = await apiClient.get(`${API_ENDPOINTS.LESSONS}?${params.toString()}`);
@@ -280,8 +284,8 @@ const CoursesPage = () => {
                                 <div className="selection-visual">
                                     <div className="circle-pulsate"></div>
                                 </div>
-                                <h3>AWAITING<br />SELECTION</h3>
-                                <p>SELECT A MODULE FROM THE HIERARCHY TO INITIALIZE FEED.</p>
+                                <h3>FEATURED<br />MODULES</h3>
+                                <p>BROWSE OUR HIGH-FIDELITY LEARNING HIERARCHY.</p>
                             </div>
                         )}
                     </div>
