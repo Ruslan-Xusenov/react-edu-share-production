@@ -194,12 +194,13 @@ const HomePage = () => {
                             >
                                 <div className="course-image-wrapper">
                                     <img
-                                        src={course.thumbnail_url || `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=600&h=400&fit=crop&q=75`}
+                                        src={course.thumbnail_url || `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=400&h=266&fit=crop&q=60`}
                                         alt={course.title}
                                         className="course-image"
                                         loading="lazy"
-                                        width="600"
-                                        height="400"
+                                        decoding="async"
+                                        width="400"
+                                        height="266"
                                     />
                                 </div>
                                 <div className="course-info">

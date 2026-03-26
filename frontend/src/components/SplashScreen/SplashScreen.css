@@ -13,6 +13,7 @@
     justify-content: center;
     flex-direction: column;
     overflow-y: auto;
+    will-change: transform, opacity;
 }
 
 .splash-screen.fade-out {
@@ -76,6 +77,7 @@
     border-radius: 50%;
     filter: blur(100px);
     animation: orbFloat 5s ease-in-out infinite;
+    will-change: transform;
 }
 
 .splash-orb-1 {
@@ -192,7 +194,7 @@
     opacity: 0;
     animation-delay: 0.5s;
     box-shadow: 0 0 30px 10px rgba(0, 242, 254, 0.3);
-    will-change: transform;
+    will-change: transform, opacity;
 }
 
 @keyframes scanDown {
@@ -233,6 +235,7 @@
     animation: logoReveal 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     opacity: 0;
     animation-delay: 0.3s;
+    will-change: transform, opacity;
 }
 
 @keyframes logoReveal {
@@ -316,18 +319,19 @@
     opacity: 0;
     animation-delay: 1s;
     position: relative;
+    will-change: transform, opacity;
 }
 
 @keyframes titleReveal {
     0% {
         opacity: 0;
-        letter-spacing: 2em;
+        transform: scale(1.1);
         filter: blur(10px);
     }
 
     100% {
         opacity: 1;
-        letter-spacing: 0.8em;
+        transform: scale(1);
         filter: blur(0);
     }
 }
@@ -343,11 +347,13 @@
     background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
     animation: lineExpand 1s ease forwards;
     animation-delay: 2s;
+    will-change: transform;
+    transform: scaleX(0);
 }
 
 @keyframes lineExpand {
     to {
-        width: 100%;
+        transform: scaleX(1);
     }
 }
 
@@ -400,27 +406,30 @@
     animation: loaderFill 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     animation-delay: 2.5s;
     box-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-pink);
+    will-change: transform;
+    transform: scaleX(0);
+    transform-origin: left;
 }
 
 @keyframes loaderFill {
     0% {
-        width: 0%;
+        transform: scaleX(0);
     }
 
     30% {
-        width: 40%;
+        transform: scaleX(0.4);
     }
 
     60% {
-        width: 70%;
+        transform: scaleX(0.7);
     }
 
     90% {
-        width: 95%;
+        transform: scaleX(0.95);
     }
 
     100% {
-        width: 100%;
+        transform: scaleX(1);
     }
 }
 

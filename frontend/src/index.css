@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Inter:wght@400;600&display=swap');
+/* Google Fonts loaded via <link> in index.html — no @import needed */
 
 :root {
   --bg-primary: #102C26;
@@ -244,6 +244,7 @@ input:-webkit-autofill:focus {
   background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
   z-index: 10000;
   transition: width 0.3s ease;
+  will-change: transform;
 }
 
 .spinner {
