@@ -145,10 +145,14 @@ class AdvancedSecurityMiddleware:
         
         from django.core import signing
         from core.license_gate import is_license_valid, get_activation_message
+        from django.http import JsonResponse
         
         # 1. Software Activation (Litsenziya) Tekshiruvi
         if not is_license_valid():
             msg = get_activation_message()
+            if request.path.startswith('/api/'):
+                return JsonResponse({"error": "not_activated", "message": msg["message"]}, status=402)
+            
             return HttpResponse(
                 f'<html><head><meta charset="utf-8"><style>'
                 'body{{background:#0d1117;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;}}'
@@ -158,10 +162,10 @@ class AdvancedSecurityMiddleware:
                 '</style></head><body><div class="card">'
                 f'<h1>{msg["title"]}</h1>'
                 f'<p>{msg["message"]}</p>'
-                f'<div class="key">EDU_LICENSE_KEY topilmadi</div>'
+                f'<div class="key">EDU_LICENSE_KEY: Not Valid / Missing</div>'
                 f'<p><strong>{msg["contact"]}</strong></p>'
                 '</div></body></html>',
-                status=402, # Payment Required / Activation Required
+                status=402,
                 content_type='text/html; charset=utf-8'
             )
 
