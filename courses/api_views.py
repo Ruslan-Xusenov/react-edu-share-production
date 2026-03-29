@@ -240,18 +240,28 @@ class LessonViewSet(viewsets.ModelViewSet):
             if enrollment.progress >= 99.5 and enrollment.points_tier < 3:
                 user.points += 20
                 enrollment.points_tier = 3
-                reward_msg = "Siz darsni 100% yakunladingiz! Endi test topshirib sertifikat olishingiz mumkin. 🎉"
+                reward_msg = "Siz darsni 100% yakunladingiz! 🎉"
                 user.save(update_fields=['points'])
                 enrollment.progress = 100.0
 
+                # Auto-issue certificate if no quiz exists
+                if not lesson.quiz_questions.exists():
+                    Certificate.objects.get_or_create(user=user, lesson=lesson)
+                    enrollment.quiz_passed = True
+                    user.points += 40
+                    user.save(update_fields=['points'])
+                    reward_msg = "Siz darsni 100% yakunladingiz va Sertifikat sohibi bo'ldingiz! 🎉🎓 (Bonus: +40 ball)"
+
             enrollment.save()
 
+            has_quiz = lesson.quiz_questions.exists()
             return Response({
                 'status': 'success',
                 'progress': enrollment.progress,
                 'reward_message': reward_msg,
-                'quiz_available': enrollment.progress >= 99.9,
-                'quiz_passed': enrollment.quiz_passed
+                'quiz_available': enrollment.progress >= 99.9 and has_quiz,
+                'quiz_passed': enrollment.quiz_passed,
+                'has_quiz': has_quiz
             })
         except Enrollment.DoesNotExist:
             return Response({'status': 'error', 'message': 'Not enrolled'}, status=status.HTTP_400_BAD_REQUEST)

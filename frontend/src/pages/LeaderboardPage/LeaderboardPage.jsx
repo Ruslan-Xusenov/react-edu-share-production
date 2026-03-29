@@ -9,23 +9,16 @@ import './LeaderboardPage.css';
 const LeaderboardPage = () => {
     const [leaders, setLeaders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentUserRank, setCurrentUserRank] = useState(null);
 
     useEffect(() => {
         const fetchLeaders = async () => {
             try {
                 const res = await apiClient.get(API_ENDPOINTS.LEADERBOARD);
-                // Faqat TOP 5 ni olamiz
-                const data = res.data.results || [];
-                setLeaders(data.slice(0, 5));
+                setLeaders(res.data.results || []);
+                setCurrentUserRank(res.data.current_user_rank);
             } catch (error) {
                 console.error("Error fetching leaderboard:", error);
-                setLeaders([
-                    { id: 1, full_name: 'Ruslan Xusenov', points: 1250, rank: 1 },
-                    { id: 2, full_name: 'Amir Karimov', points: 980, rank: 2 },
-                    { id: 3, full_name: 'Dilnoza Rahimova', points: 750, rank: 3 },
-                    { id: 4, full_name: 'Jasur Toshmatov', points: 540, rank: 4 },
-                    { id: 5, full_name: 'Nodira Aliyeva', points: 320, rank: 5 },
-                ]);
             } finally {
                 setLoading(false);
             }
@@ -48,15 +41,17 @@ const LeaderboardPage = () => {
         return '';
     };
 
-    // TOP 5 ga qayta tartiblash: [2, 1, 3] + [4, 5] ko'rinishida podium uchun
+    // TOP 3 podium (2nd, 1st, 3rd)
     const getPodiumOrder = () => {
-        if (leaders.length < 3) return leaders;
-        return [leaders[1], leaders[0], leaders[2]]; // 2nd, 1st, 3rd
+        if (leaders.length === 0) return [];
+        if (leaders.length === 1) return [leaders[0]];
+        if (leaders.length === 2) return [leaders[1], leaders[0]];
+        return [leaders[1], leaders[0], leaders[2]];
     };
 
-    const getBottomTwo = () => {
+    const getOtherLeaders = () => {
         if (leaders.length <= 3) return [];
-        return leaders.slice(3, 5); // 4th, 5th
+        return leaders.slice(3);
     };
 
     return (
@@ -89,28 +84,41 @@ const LeaderboardPage = () => {
                     <div className="loading-state"><h3>YUKLANMOQDA...</h3></div>
                 ) : (
                     <div className="podium-container">
-                        <h2 className="section-title">🏆 PODIUM</h2>
+                        <h2 className="section-title">🏆 REYTING JADVALI</h2>
+
+                        {currentUserRank && (
+                            <div className="current-user-rank-banner">
+                                Sizning o'rningiz: <strong>#{currentUserRank}</strong>
+                            </div>
+                        )}
+
                         <div className="podium-grid">
                             {getPodiumOrder().map((leader, podiumIdx) => {
-                                // podiumIdx: 0=2nd place, 1=1st place, 2=3rd place
-                                const actualIndex = podiumIdx === 0 ? 1 : podiumIdx === 1 ? 0 : 2;
+                                // actualIndex logic: if 3 leaders, order is 2,1,3. So idx 0 is rank 2, idx 1 is rank 1, idx 2 is rank 3.
+                                let actualRankIndex = 0;
+                                if (getPodiumOrder().length === 3) {
+                                    actualRankIndex = podiumIdx === 0 ? 1 : podiumIdx === 1 ? 0 : 2;
+                                } else if (getPodiumOrder().length === 2) {
+                                    actualRankIndex = podiumIdx === 0 ? 1 : 0;
+                                } else {
+                                    actualRankIndex = 0;
+                                }
+
                                 return (
                                     <motion.div
                                         key={leader.id}
-                                        className={`podium-card ${getMedalClass(actualIndex)} ${podiumIdx === 1 ? 'champion' : ''}`}
+                                        className={`podium-card ${getMedalClass(actualRankIndex)} ${actualRankIndex === 0 ? 'champion' : ''}`}
                                         initial={{ opacity: 0, y: 80 }}
                                         whileInView={{ opacity: 1, y: 0 }}
                                         transition={{ delay: podiumIdx * 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                                         viewport={{ once: true }}
                                         whileHover={{ y: -10, transition: { duration: 0.3 } }}
                                     >
-                                        {/* Floating rank */}
                                         <div className="podium-rank-badge">
-                                            {getMedalIcon(actualIndex)}
+                                            {getMedalIcon(actualRankIndex)}
                                         </div>
 
-                                        {/* Avatar */}
-                                        <div className={`podium-avatar-wrap ${getMedalClass(actualIndex)}`}>
+                                        <div className={`podium-avatar-wrap ${getMedalClass(actualRankIndex)}`}>
                                             {leader.avatar ? (
                                                 <img src={leader.avatar} alt={leader.full_name} className="podium-avatar" />
                                             ) : (
@@ -120,10 +128,9 @@ const LeaderboardPage = () => {
                                             )}
                                         </div>
 
-                                        {/* Name */}
                                         <h3 className="podium-name">{leader.full_name || leader.username}</h3>
+                                        {leader.school && <p className="podium-school">{leader.school}</p>}
 
-                                        {/* Points */}
                                         <div className="podium-points">
                                             <FaStar className="star-icon" />
                                             <span>{leader.points}</span>
@@ -134,16 +141,16 @@ const LeaderboardPage = () => {
                             })}
                         </div>
 
-                        {/* 4th-5th place list */}
-                        {getBottomTwo().length > 0 && (
-                            <div className="runners-up">
-                                {getBottomTwo().map((leader, idx) => (
+                        {/* Other ranks list */}
+                        {getOtherLeaders().length > 0 && (
+                            <div className="runners-up full-list">
+                                {getOtherLeaders().map((leader, idx) => (
                                     <motion.div
                                         key={leader.id}
                                         className="runner-card"
                                         initial={{ opacity: 0, x: -40 }}
                                         whileInView={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: idx * 0.1 + 0.3, duration: 0.5 }}
+                                        transition={{ delay: (idx % 10) * 0.05, duration: 0.5 }}
                                         viewport={{ once: true }}
                                     >
                                         <span className="runner-rank">{idx + 4}</span>
@@ -158,11 +165,13 @@ const LeaderboardPage = () => {
                                         </div>
                                         <div className="runner-info">
                                             <span className="runner-name">{leader.full_name || leader.username}</span>
+                                            {leader.school && <span className="runner-school">{leader.school}</span>}
+                                        </div>
+                                        <div className="runner-stats">
                                             <span className="runner-points">
                                                 <FaStar /> {leader.points} ball
                                             </span>
                                         </div>
-                                        <FaChevronUp className="runner-trend" />
                                     </motion.div>
                                 ))}
                             </div>

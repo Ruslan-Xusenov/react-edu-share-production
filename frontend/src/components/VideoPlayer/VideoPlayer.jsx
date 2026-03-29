@@ -87,7 +87,8 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
                 const hls = new HlsLib({
                     autoStartLoad: true,
                     startLevel: -1, // auto
-                    capLevelToPlayerSize: true,
+                    // Disable capLevelToPlayerSize to allow manual high-res selection
+                    capLevelToPlayerSize: false,
                     maxBufferLength: 30,
                     maxMaxBufferLength: 60,
                 });
@@ -104,9 +105,10 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
                         height: l.height || 0,
                         bitrate: l.bitrate,
                     }));
+                    // Sort by height descending: 1080p, 720p, 480p...
                     qualityLevels.sort((a, b) => b.height - a.height);
                     setLevels(qualityLevels);
-                    setCurrentLevel(-1); // auto
+                    setCurrentLevel(-1); // default to auto
                 });
 
                 hls.on(HlsLib.Events.LEVEL_SWITCHED, (event, data) => {

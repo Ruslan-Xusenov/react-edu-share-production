@@ -117,19 +117,39 @@ def api_profile(request):
 def api_leaderboard(request):
     if request.method != 'GET':
         return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
-    top_users = CustomUser.objects.filter(is_superuser=False).order_by('-points')[:10]
+    
+    # 20 tagacha o'quvchini olish (faqat balli borlar)
+    top_users = CustomUser.objects.filter(is_superuser=False, points__gt=0).order_by('-points')[:20]
     users_data = []
-    for user in top_users:
+    
+    for i, user in enumerate(top_users):
+        avatar_url = None
+        if user.avatar:
+            avatar_url = request.build_absolute_uri(user.avatar.url)
+        else:
+            avatar_url = f"https://ui-avatars.com/api/?name={user.full_name}&background=random"
+            
         users_data.append({
             'id': user.id,
             'full_name': user.full_name,
             'username': user.username,
             'points': user.points,
-            'avatar': user.avatar.url if user.avatar else None,
+            'avatar': avatar_url,
+            'rank': i + 1,
+            'school': user.school or ""
         })
+        
+    # Agar user tizimga kirgan bo'lsa, uning o'z o'rnini ham qaytarish
+    current_user_rank = None
+    if request.user.is_authenticated and not request.user.is_superuser:
+        # Userning o'rnini aniqlash (balli bo'yicha)
+        better_users_count = CustomUser.objects.filter(is_superuser=False, points__gt=request.user.points).count()
+        current_user_rank = better_users_count + 1
+
     return JsonResponse({
         'status': 'success',
-        'results': users_data
+        'results': users_data,
+        'current_user_rank': current_user_rank
     })
 
 

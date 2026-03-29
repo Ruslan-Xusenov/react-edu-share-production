@@ -637,3 +637,47 @@
         font-size: 0.8rem;
     }
 }
+
+.current-user-rank-banner {
+    background: linear-gradient(90deg, rgba(0, 242, 254, 0.1), transparent);
+    border-left: 4px solid #00f2fe;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.podium-school {
+    font-size: 0.7rem;
+    color: rgba(0, 242, 254, 0.5);
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.runner-school {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.runners-up.full-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.runners-up.full-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.runners-up.full-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}

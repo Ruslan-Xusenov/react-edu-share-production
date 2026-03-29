@@ -249,35 +249,41 @@ const CourseDetailPage = () => {
 
             if (res.data.status === 'success') {
                 const newProgress = res.data.progress;
+                const hasQuiz = res.data.has_quiz;
 
                 setCourse(prev => {
                     const prevProgress = prev?.progress || 0;
-                    // Only update state if meaningful changes occurred to prevent re-renders
                     if (newProgress !== prevProgress ||
                         res.data.quiz_available !== prev.quiz_available ||
                         res.data.certificate_id !== prev.certificate_id) {
 
-                        // Check for quiz auto-unlock inside setCourse to have access to latest state
+                        // If lesson completed
                         if (newProgress >= 99.5 && prevProgress < 99.5 && !quizAutoOpened) {
                             setQuizAutoOpened(true);
-                            if (prev?.has_quiz) {
-                                setShowQuizUnlock(true);
+                            if (hasQuiz) {
+                                setShowQuizUnlock(true); // Show quiz modal
+                            } else {
+                                // No quiz, certificate was auto-issued
+                                setNotification("Tabriklaymiz! Siz darsni 100% yakunladingiz va Sertifikat sohibi bo'ldingiz! 🎓");
+                                setTimeout(() => setNotification(null), 10000);
                             }
                         }
 
                         return {
                             ...prev,
                             progress: newProgress,
-                            quiz_available: res.data.quiz_available || prev.quiz_available,
-                            certificate_id: res.data.certificate_id || prev.certificate_id,
-                            is_enrolled: true // Ensure it stays true
+                            quiz_available: res.data.quiz_available,
+                            quiz_passed: res.data.quiz_passed,
+                            has_quiz: hasQuiz,
+                            is_enrolled: true
                         };
                     }
                     return prev;
                 });
             }
 
-            if (res.data.reward_message) {
+            if (res.data.reward_message && !res.data.has_quiz) {
+                // If reward message exists but no quiz, show it
                 setNotification(res.data.reward_message);
                 setTimeout(() => setNotification(null), 7000);
             }
