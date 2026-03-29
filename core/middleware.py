@@ -106,41 +106,25 @@ class AdvancedSecurityMiddleware:
         ip_address = get_client_ip(request)
         from django.conf import settings
         
-        # 🛡️ API/Admin IP restriction (Highest priority)
-        if self._is_api_path(request.path):
-            # 1. Try Cache first
-            cache_key = 'allowed_api_ips_list'
-            allowed_ips = cache.get(cache_key)
-            
-            if allowed_ips is None:
-                # 2. Fetch from DB
-                allowed_ips = list(AllowedIP.objects.filter(is_active=True).values_list('ip_address', flat=True))
-                # 3. Add .env fallbacks if any
-                env_ips = getattr(settings, 'ALLOWED_API_IPS', [])
-                if isinstance(env_ips, list):
-                    allowed_ips.extend(env_ips)
-                # 4. Cache for 5 minutes
-                cache.set(cache_key, allowed_ips, 300)
-
-            if ip_address not in allowed_ips and not self._is_local_ip(ip_address):
-                # Mask as 404 for unauthorized IPs
-                log_security_event(
-                    'UNAUTHORIZED_PROTECTED_ACCESS',
-                    f'Unauthorized access to {request.path} from {ip_address}',
-                    'WARNING'
-                )
-                return HttpResponseNotFound(
-                    '<html><head><title>404 Not Found</title></head>'
-                    '<body><center><h1>404 Not Found</h1></center><hr><center>nginx</center></body></html>'
-                )
-
+        # 🛡️ API/Admin IP restriction (Yumshoqroq rejim - cheklovlar vaqtincha olib tashlandi)
+        # if self._is_api_path(request.path):
+        #     cache_key = 'allowed_api_ips_list'
+        #     allowed_ips = cache.get(cache_key)
+        #     if allowed_ips is None:
+        #         allowed_ips = list(AllowedIP.objects.filter(is_active=True).values_list('ip_address', flat=True))
+        #         env_ips = getattr(settings, 'ALLOWED_API_IPS', [])
+        #         if isinstance(env_ips, list):
+        #             allowed_ips.extend(env_ips)
+        #         cache.set(cache_key, allowed_ips, 300)
+        #
+        #     if ip_address not in allowed_ips and not self._is_local_ip(ip_address):
+        #         log_security_event('UNAUTHORIZED_PROTECTED_ACCESS', f'Attempt from {ip_address}', 'WARNING')
+        #         # return HttpResponseNotFound('404 Not Found')
+        
+        # Security headers for local/debug or if skipped
         if settings.DEBUG and self._is_local_ip(ip_address):
             response = self.get_response(request)
-            if hasattr(response, 'headers'):
-                response['X-Content-Type-Options'] = 'nosniff'
-                response['X-Frame-Options'] = 'DENY'
-                response['X-XSS-Protection'] = '1; mode=block'
-                response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            self._set_security_headers(response)
             return response
         
         from django.core import signing
@@ -168,9 +152,6 @@ class AdvancedSecurityMiddleware:
                 status=402,
                 content_type='text/html; charset=utf-8'
             )
-
-        # 2. Xavfsizlik Tekshirishlari (Yumshatilgan variant)
-        # IP yoki Cookie orqali blokni tekshirish
         is_blocked = self.is_ip_blocked(ip_address)
         if is_blocked:
             block = IPBlocklist.objects.filter(ip_address=ip_address).first()
