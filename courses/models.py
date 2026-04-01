@@ -419,3 +419,32 @@ def handle_submission_grading(sender, instance, created, **kwargs):
         elif not cert.pdf_file:
             from .utils import generate_certificate_pdf
             generate_certificate_pdf(cert)
+
+
+from django.db.models.signals import post_delete
+import shutil
+
+@receiver(post_delete, sender=Lesson)
+def delete_lesson_files(sender, instance, **kwargs):
+    """
+    Dars o'chirilganida unga tegishli barcha fayllarni (video, hls, thumbnail) o'chirib tashlash.
+    """
+    # 1. Video faylni o'chirish
+    if instance.video_file:
+        if os.path.isfile(instance.video_file.path):
+            os.remove(instance.video_file.path)
+    
+    # 2. Thumbnailni o'chirish
+    if instance.thumbnail:
+        if os.path.isfile(instance.thumbnail.path):
+            os.remove(instance.thumbnail.path)
+
+    # 3. Resource faylni o'chirish
+    if instance.resource_file:
+        if os.path.isfile(instance.resource_file.path):
+            os.remove(instance.resource_file.path)
+
+    # 4. HLS papkasini o'chirish
+    hls_dir = os.path.join(settings.MEDIA_ROOT, 'hls', str(instance.id))
+    if os.path.exists(hls_dir):
+        shutil.rmtree(hls_dir)

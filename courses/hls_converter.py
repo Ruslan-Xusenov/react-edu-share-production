@@ -18,43 +18,44 @@ HLS_PROFILES = [
         'name': '1080p',
         'width': 1920,
         'height': 1080,
-        'video_bitrate': '4000k',
+        'video_bitrate': '6000k',
         'audio_bitrate': '192k',
-        'bandwidth': 4500000,
+        'bandwidth': 6500000,
     },
     {
         'name': '720p',
         'width': 1280,
         'height': 720,
-        'video_bitrate': '2500k',
+        'video_bitrate': '4000k',
         'audio_bitrate': '128k',
-        'bandwidth': 2800000,
+        'bandwidth': 4500000,
     },
     {
         'name': '480p',
         'width': 854,
         'height': 480,
-        'video_bitrate': '1000k',
+        'video_bitrate': '2000k',
         'audio_bitrate': '128k',
-        'bandwidth': 1200000,
+        'bandwidth': 2200000,
     },
     {
         'name': '360p',
         'width': 640,
         'height': 360,
-        'video_bitrate': '600k',
+        'video_bitrate': '1000k',
         'audio_bitrate': '96k',
-        'bandwidth': 750000,
+        'bandwidth': 1200000,
     },
     {
         'name': '240p',
         'width': 426,
         'height': 240,
-        'video_bitrate': '300k',
+        'video_bitrate': '500k',
         'audio_bitrate': '64k',
-        'bandwidth': 400000,
+        'bandwidth': 600000,
     },
 ]
+
 
 
 def get_video_resolution(input_path):
@@ -98,11 +99,15 @@ def convert_to_hls(lesson_id, input_video_path):
     orig_width, orig_height = get_video_resolution(input_path)
     logger.info(f"Original video o'lchami: {orig_width}x{orig_height}")
 
-    # Faqat original dan kichik yoki teng profillarni qo'llash
-    applicable_profiles = [
-        p for p in HLS_PROFILES
-        if orig_height == 0 or p['height'] <= orig_height
-    ]
+    # 720p va undan kichik profillarni har doim qo'shish (user xohishiga ko'ra)
+    # 1080p esa faqat original video katta bo'lsa qo'shiladi
+    applicable_profiles = []
+    for p in HLS_PROFILES:
+        if p['height'] <= 720:
+            applicable_profiles.append(p)
+        elif orig_height >= 1000: # 1080p uchun kamida 1000px balandlik kerak
+            applicable_profiles.append(p)
+
 
     if not applicable_profiles:
         applicable_profiles = [HLS_PROFILES[-1]]  # Eng kichik profil
@@ -122,7 +127,8 @@ def convert_to_hls(lesson_id, input_video_path):
             'ffmpeg', '-y',
             '-i', str(input_path),
             '-c:v', 'libx264',
-            '-preset', 'fast',
+            '-preset', 'medium',
+
             '-profile:v', 'main',
             '-crf', '23',
             '-b:v', profile['video_bitrate'],

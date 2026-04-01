@@ -40,8 +40,9 @@ urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 
-    re_path(r'^(?!api|edushare-boshqaruv-2026|admin|media|static|assets|accounts|sitemap\.xml|robots\.txt).*$', 
+    re_path(r'^(?!api|edushare-boshqaruv-2026|admin|media|static|assets|accounts|sitemap\.xml|robots\.txt|favicon\.ico|logo\.png|.*?\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|woff2?|map)).*$', 
            TemplateView.as_view(template_name='index.html'), name='react-app'),
+
 
     # 📁 Legacy Django Views (Faqat 'reverse' ishlashi uchun qoldirildi)
     path('courses/', include('courses.urls')),

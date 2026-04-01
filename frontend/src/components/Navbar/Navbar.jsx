@@ -82,9 +82,10 @@ const Navbar = () => {
     return (
         <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
             <Link to="/" className="navbar-logo">
-                <img src="/logo.png" alt="EduShare Logo" className="logo-img" />
+                <img src="/static/logo.png" alt="EduShare Logo" className="logo-img" />
                 <span>EDUSHARE SCHOOL</span>
             </Link>
+
 
             <div className={`navbar-nav ${isMobileOpen ? 'mobile-open' : ''}`}>
                 {navLinks.map((link, idx) => (
