@@ -240,13 +240,12 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
         }
     };
 
+    /* Seeking is disabled as per user requirement */
     const handleSeek = (e) => {
-        const video = videoRef.current;
-        if (!video || !video.duration) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        video.currentTime = Math.max(0, Math.min(percent * video.duration, video.duration));
+        e.stopPropagation();
+        // Skip/Seek functionality removed to prevent skipping content
     };
+
 
     const toggleMute = () => {
         const video = videoRef.current;
@@ -365,8 +364,8 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
 
             {/* Controls */}
             <div className="video-controls" onClick={e => e.stopPropagation()}>
-                {/* Progress bar */}
-                <div className="progress-container" onClick={handleSeek}>
+                {/* Progress bar (Read-only) */}
+                <div className="progress-container read-only">
                     <div className="progress-buffered" style={{ width: `${buffered}%` }} />
                     <div
                         className="progress-filled"
@@ -375,6 +374,7 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
                         <div className="progress-thumb" />
                     </div>
                 </div>
+
 
                 <div className="controls-row">
                     <div className="controls-left">

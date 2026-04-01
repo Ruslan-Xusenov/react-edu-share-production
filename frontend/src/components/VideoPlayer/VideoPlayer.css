@@ -140,6 +140,14 @@
 .progress-container:hover {
     height: 6px;
 }
+.progress-container.read-only {
+    cursor: default;
+    height: 4px !important;
+}
+.progress-container.read-only:hover {
+    height: 4px !important;
+}
+
 
 .progress-buffered {
     position: absolute;
@@ -178,6 +186,10 @@
 .progress-container:hover .progress-thumb {
     opacity: 1;
 }
+.progress-container.read-only .progress-thumb {
+    display: none;
+}
+
 
 /* ---- Controls Row ---- */
 .controls-row {
