@@ -129,12 +129,12 @@ def convert_to_hls(lesson_id, input_video_path):
             '-i', str(input_path),
             '-c:v', 'libx264',
             '-preset', 'medium',
-
             '-profile:v', 'main',
-            '-crf', '23',
+            '-crf', '21',
             '-b:v', profile['video_bitrate'],
             '-maxrate', profile['video_bitrate'],
-            '-bufsize', str(int(profile['video_bitrate'][:-1]) * 2) + 'k',
+            '-bufsize', str(int(profile['video_bitrate'][:-1]) * 1.5) + 'k',
+
             '-vf', f"scale={profile['width']}:{profile['height']}:force_original_aspect_ratio=decrease,pad={profile['width']}:{profile['height']}:(ow-iw)/2:(oh-ih)/2",
             '-c:a', 'aac',
             '-b:a', profile['audio_bitrate'],
