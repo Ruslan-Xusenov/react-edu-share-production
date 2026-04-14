@@ -49,14 +49,18 @@ apt-get install -y \
     python3-certbot-nginx
 print_status "Packages installed"
 
-echo ""
-echo "3. Setting up PostgreSQL..."
-# Get DB password from .env if available, otherwise use a safe default OR prompt
-DB_PWD=$(grep DATABASE_PASSWORD "$PROJECT_DIR/.env" | cut -d '=' -f2 || echo "edushare_db_2026")
-DB_NAME=$(grep DATABASE_NAME "$PROJECT_DIR/.env" | cut -d '=' -f2 || echo "edushare_db")
-DB_USER=$(grep DATABASE_USER "$PROJECT_DIR/.env" | cut -d '=' -f2 || echo "postgres")
+echo "Waiting for PostgreSQL to be ready..."
+for i in {1..5}; do
+    if sudo -u postgres psql -h 127.0.0.1 -c "SELECT 1" > /dev/null 2>&1; then
+        break
+    fi
+    echo "Wait $i/5..."
+    sleep 2
+done
 
-sudo -u postgres psql << EOF
+echo "Configuring PostgreSQL database and user..."
+# Try to run psql. We try unix socket first (standard for sudo -u postgres), then TCP fallback.
+if ! sudo -u postgres psql << EOF
 DO \$\$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME') THEN
@@ -67,6 +71,22 @@ END
 ALTER USER $DB_USER WITH PASSWORD '$DB_PWD';
 GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 EOF
+then
+    echo "Unix socket failed, trying TCP fallback..."
+    sudo -u postgres psql -h 127.0.0.1 << EOF
+DO \$\$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME') THEN
+        CREATE DATABASE $DB_NAME;
+    END IF;
+END
+\$\$;
+ALTER USER $DB_USER WITH PASSWORD '$DB_PWD';
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+EOF
+fi
+
+
 print_status "PostgreSQL configured"
 
 echo ""
