@@ -15,6 +15,32 @@ VENV_DIR="$PROJECT_DIR/venv"
 USER=$(whoami)
 GROUP=$(groups | awk '{print $1}')
 
+# Load environment variables from .env.production
+if [ -f "$PROJECT_DIR/.env.production" ]; then
+    echo "Loading environment variables from .env.production..."
+    while IFS='=' read -r key value || [ -n "$key" ]; do
+        # skip comments and empty lines
+        [[ $key =~ ^#.* ]] && continue
+        [[ -z $key ]] && continue
+        # trim whitespace and remove potential carriage returns
+        key=$(echo "$key" | xargs | tr -d '\r')
+        value=$(echo "$value" | xargs | tr -d '\r')
+        # Only export if it's a valid variable name
+        if [[ "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+            export "$key"="$value"
+        fi
+    done < "$PROJECT_DIR/.env.production"
+fi
+
+# Set database variables with defaults if not provided by .env
+DB_NAME=${DB_NAME:-"edushare_db"}
+DB_USER=${DB_USER:-"edushare_user"}
+DB_PWD=${DB_PASSWORD:-"edushare_pass"}
+
+echo "Using Database Configuration:"
+echo "  DB_NAME: $DB_NAME"
+echo "  DB_USER: $DB_USER"
+
 print_status() {
     echo -e "${GREEN}✓${NC} $1"
 }
@@ -63,6 +89,9 @@ echo "Configuring PostgreSQL database and user..."
 if ! sudo -u postgres psql << EOF
 DO \$\$
 BEGIN
+    IF NOT EXISTS (SELECT FROM pg_user WHERE usename = '$DB_USER') THEN
+        CREATE USER $DB_USER WITH PASSWORD '$DB_PWD';
+    END IF;
     IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME') THEN
         CREATE DATABASE $DB_NAME;
     END IF;
@@ -70,12 +99,16 @@ END
 \$\$;
 ALTER USER $DB_USER WITH PASSWORD '$DB_PWD';
 GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
 EOF
 then
     echo "Unix socket failed, trying TCP fallback..."
     sudo -u postgres psql -h 127.0.0.1 << EOF
 DO \$\$
 BEGIN
+    IF NOT EXISTS (SELECT FROM pg_user WHERE usename = '$DB_USER') THEN
+        CREATE USER $DB_USER WITH PASSWORD '$DB_PWD';
+    END IF;
     IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME') THEN
         CREATE DATABASE $DB_NAME;
     END IF;
@@ -83,6 +116,7 @@ END
 \$\$;
 ALTER USER $DB_USER WITH PASSWORD '$DB_PWD';
 GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
 EOF
 fi
 
@@ -135,10 +169,15 @@ print_status "Permissions set"
 
 echo ""
 echo "9. Setting up systemd service..."
-cp $PROJECT_DIR/edushare.service /etc/systemd/system/
+cp $PROJECT_DIR/edushare.service /etc/systemd/system/edushare.service
+sed -i "s|{{PROJECT_DIR}}|$PROJECT_DIR|g" /etc/systemd/system/edushare.service
+sed -i "s|{{VENV_DIR}}|$VENV_DIR|g" /etc/systemd/system/edushare.service
+sed -i "s|{{USER}}|$USER|g" /etc/systemd/system/edushare.service
+sed -i "s|{{GROUP}}|$GROUP|g" /etc/systemd/system/edushare.service
+
 systemctl daemon-reload
 systemctl enable edushare
-systemctl start edushare
+systemctl restart edushare
 print_status "Systemd service configured"
 
 echo ""

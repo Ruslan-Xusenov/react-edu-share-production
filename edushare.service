@@ -3,15 +3,15 @@ Description=EduShare Gunicorn Application
 After=network.target
 
 [Service]
-Type=notify
-User=www-data
-Group=www-data
-WorkingDirectory=/home/kali/Desktop/projects/Django/edushare.uz
-Environment="PATH=/home/kali/Desktop/projects/Django/edushare.uz/venv/bin"
-Environment="DJANGO_SETTINGS_MODULE=edushare_project.settings"
-EnvironmentFile=/home/kali/Desktop/projects/Django/edushare.uz/.env
-ExecStart=/home/kali/Desktop/projects/Django/edushare.uz/venv/bin/gunicorn \
-    --config /home/kali/Desktop/projects/Django/edushare.uz/gunicorn_config.py \
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+WorkingDirectory={{PROJECT_DIR}}
+Environment="PATH={{VENV_DIR}}/bin"
+Environment="DJANGO_SETTINGS_MODULE=edushare_project.settings_production"
+EnvironmentFile={{PROJECT_DIR}}/.env.production
+ExecStart={{VENV_DIR}}/bin/gunicorn \
+    --config {{PROJECT_DIR}}/gunicorn_config.py \
     edushare_project.wsgi:application
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
