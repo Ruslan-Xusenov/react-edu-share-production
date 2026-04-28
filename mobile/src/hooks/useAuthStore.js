@@ -34,6 +34,16 @@ const useAuthStore = create((set, get) => ({
     return response.data;
   },
 
+  // Google Login
+  googleLogin: async (idToken) => {
+    const response = await apiClient.post(API_ENDPOINTS.GOOGLE_AUTH, { id_token: idToken });
+    const { user } = response.data;
+    await storage.setItem('authToken', 'session-active');
+    await storage.setItem('user', JSON.stringify(user));
+    set({ user, token: 'session-active', isAuthenticated: true });
+    return response.data;
+  },
+
   // Signup
   signup: async (data) => {
     const response = await apiClient.post(API_ENDPOINTS.SIGNUP, data);

@@ -273,6 +273,13 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# Google OAuth — Mobil ilova uchun (id_token tekshiruvi)
+# .env da: GOOGLE_CLIENT_ID=your-web-client-id.apps.googleusercontent.com
+# Bir nechta client ID bo'lsa vergul bilan ajrating:
+# GOOGLE_CLIENT_IDS=web-client-id.apps.googleusercontent.com,android-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_IDS = os.getenv('GOOGLE_CLIENT_IDS', GOOGLE_CLIENT_ID)
+
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 

@@ -55,8 +55,14 @@
     },
     "extra": {
       "eas": {
-        "projectId": "edushare-uz-mobile"
-      }
-    }
+        "projectId": "c72dadeb-d124-4164-a843-554dd5544dba"
+      },
+      "router": {},
+      "googleExpoClientId": "156032019101-fcpg1tfle3ubau9d19p7gr51ke580e9r.apps.googleusercontent.com",
+      "googleAndroidClientId": "166926794258-g76akjkg3m6lghbera5ckqbal7m4jt1u.apps.googleusercontent.com",
+      "googleIosClientId": "",
+      "googleWebClientId": "156032019101-fcpg1tfle3ubau9d19p7gr51ke580e9r.apps.googleusercontent.com"
+    },
+    "owner": "ruslan_xusenov11"
   }
 }

@@ -10,6 +10,7 @@ import re
 import logging
 from .models import CustomUser
 from .forms import ProfileForm
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -618,6 +619,155 @@ def api_resend_password_otp(request):
     except Exception as e:
         logger.error(f"Resend OTP error: {e}")
         return JsonResponse({'status': 'error', 'message': "Xatolik yuz berdi."}, status=500)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GOOGLE OAuth — Mobil ilova uchun Google ID Token tekshirish
+# ─────────────────────────────────────────────────────────────────────────────
+
+@csrf_exempt
+def api_google_auth(request):
+    """
+    Mobil ilovadan kelgan Google id_token ni tekshiradi.
+    Foydalanuvchi bazada bo'lmasa — yaratadi, bo'lsa — tizimga kirgizadi.
+    Request body: { "id_token": "<google_id_token>" }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+    try:
+        data, error = _safe_json_parse(request)
+        if error:
+            return JsonResponse({'status': 'error', 'message': error}, status=400)
+
+        id_token_str = data.get('id_token', '').strip()
+        if not id_token_str:
+            return JsonResponse({'status': 'error', 'message': 'id_token kiritilishi shart.'}, status=400)
+
+        # Google tokenni tekshirish
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+
+        # Google Client ID — .env da GOOGLE_CLIENT_ID nomi bilan saqlaning
+        # Android va Web uchun alohida bo'lishi mumkin, shuning uchun list shaklida tekshiramiz
+        google_client_ids = [
+            cid.strip() for cid in
+            getattr(settings, 'GOOGLE_CLIENT_IDS', getattr(settings, 'GOOGLE_CLIENT_ID', '')).split(',')
+            if cid.strip()
+        ]
+        if not google_client_ids:
+            logger.error("GOOGLE_CLIENT_ID sozlanmagan!")
+            return JsonResponse({'status': 'error', 'message': 'Server konfiguratsiya xatosi.'}, status=500)
+
+        # Token tekshiruvi
+        idinfo = None
+        last_err = None
+        for client_id in google_client_ids:
+            try:
+                idinfo = google_id_token.verify_oauth2_token(
+                    id_token_str,
+                    google_requests.Request(),
+                    client_id
+                )
+                break
+            except Exception as e:
+                last_err = e
+                continue
+
+        if idinfo is None:
+            logger.warning(f"Google token tekshiruv xatosi: {last_err}")
+            return JsonResponse({'status': 'error', 'message': "Google tokeni noto'g'ri yoki muddati tugagan."}, status=400)
+
+        # Token ma'lumotlarini olish
+        email = idinfo.get('email', '').lower()
+        google_id = idinfo.get('sub', '')
+        full_name = idinfo.get('name', '') or idinfo.get('given_name', '')
+        avatar_url = idinfo.get('picture', '')
+        email_verified = idinfo.get('email_verified', False)
+
+        if not email or not google_id:
+            return JsonResponse({'status': 'error', 'message': "Google hisobi emaili topilmadi."}, status=400)
+
+        if not email_verified:
+            return JsonResponse({'status': 'error', 'message': "Google email tasdiqlanmagan."}, status=400)
+
+        # Foydalanuvchini topish yoki yaratish
+        user = None
+
+        # 1. Avval Google Social Account orqali qidirish
+        try:
+            from allauth.socialaccount.models import SocialAccount
+            social = SocialAccount.objects.get(provider='google', uid=google_id)
+            user = social.user
+        except Exception:
+            pass
+
+        # 2. Email orqali qidirish
+        if user is None:
+            try:
+                user = CustomUser.objects.get(email=email)
+            except CustomUser.DoesNotExist:
+                pass
+
+        # 3. Yangi foydalanuvchi yaratish
+        if user is None:
+            import random
+            username_base = re.sub(r'[^a-zA-Z0-9_]', '', email.split('@')[0])[:25] or 'user'
+            username = username_base
+            while CustomUser.objects.filter(username=username).exists():
+                username = f"{username_base}{random.randint(100, 9999)}"
+
+            user = CustomUser.objects.create_user(
+                username=username,
+                email=email,
+                password=None,  # Social login — parol yo'q
+                full_name=full_name or username,
+            )
+            user.set_unusable_password()
+            user.save()
+
+            # SocialAccount yaratish
+            try:
+                from allauth.socialaccount.models import SocialAccount, SocialToken, SocialApp
+                SocialAccount.objects.get_or_create(
+                    user=user,
+                    provider='google',
+                    uid=google_id,
+                    defaults={'extra_data': idinfo}
+                )
+            except Exception as e:
+                logger.warning(f"SocialAccount yaratishda xato: {e}")
+
+        # Foydalanuvchini tizimga kirgizish
+        from django.contrib.auth import login
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+        # Avatar URL ni olish (agar bazada yo'q bo'lsa, Google dan olamiz)
+        user_avatar = None
+        if user.avatar:
+            user_avatar = request.build_absolute_uri(user.avatar.url)
+        elif avatar_url:
+            user_avatar = avatar_url
+        else:
+            user_avatar = f"https://ui-avatars.com/api/?name={user.full_name}&background=random"
+
+        logger.info(f"Google login: {user.email} (ID: {user.id}) from IP: {_get_client_ip(request)}")
+
+        return JsonResponse({
+            'status': 'success',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'full_name': user.full_name,
+                'username': user.username,
+                'is_staff': user.is_superuser,
+                'avatar': user_avatar,
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"Google auth xatosi: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': "Google orqali kirishda xatolik."}, status=500)
 
 
 def _send_password_otp_email(user, otp_code):

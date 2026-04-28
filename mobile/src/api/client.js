@@ -105,4 +105,5 @@ export const API_ENDPOINTS = {
   REQUEST_PASSWORD_CHANGE: '/accounts/request-password-change/',
   VERIFY_PASSWORD_OTP: '/accounts/verify-password-otp/',
   RESEND_PASSWORD_OTP: '/accounts/resend-password-otp/',
+  GOOGLE_AUTH: '/accounts/google-auth/',
 };

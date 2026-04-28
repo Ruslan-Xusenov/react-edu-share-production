@@ -18,4 +18,6 @@ urlpatterns = [
     path('request-password-change/', views.api_request_password_change, name='api_request_password_change'),
     path('verify-password-otp/', views.api_verify_password_otp, name='api_verify_password_otp'),
     path('resend-password-otp/', views.api_resend_password_otp, name='api_resend_password_otp'),
+    # ── Google OAuth (mobil ilova uchun) ─────────────────────────
+    path('google-auth/', views.api_google_auth, name='api_google_auth'),
 ]

@@ -11,7 +11,8 @@ import {
   RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../../src/utils/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS, SPACING, RADIUS, FONTS, SHADOWS } from '../../src/utils/theme';
 import apiClient, { API_ENDPOINTS } from '../../src/api/client';
 
 const CommunityScreen = () => {

@@ -1,11 +1,16 @@
-import { Tabs, Redirect } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useAuthStore from '../../src/hooks/useAuthStore';
 import { COLORS } from '../../src/utils/theme';
 
 export default function TabsLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const insets = useSafeAreaInsets();
+
+  const tabBarHeight = Platform.OS === 'ios' ? 60 : 58;
+  const bottomPad = Platform.OS === 'ios' ? insets.bottom : Math.max(insets.bottom, 8);
 
   return (
     <Tabs
@@ -15,9 +20,9 @@ export default function TabsLayout() {
           backgroundColor: COLORS.surface,
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 85 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 25 : 10,
-          paddingTop: 10,
+          height: tabBarHeight + bottomPad,
+          paddingBottom: bottomPad,
+          paddingTop: 8,
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textMuted,
