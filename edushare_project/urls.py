@@ -39,8 +39,9 @@ urlpatterns = [
 
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
+    path('google94bc4a68fc393c2a.html', TemplateView.as_view(template_name="google94bc4a68fc393c2a.html", content_type="text/html")),
 
-    re_path(r'^(?!api|edushare-boshqaruv-2026|admin|media|static|assets|accounts|sitemap\.xml|robots\.txt|favicon\.ico|logo\.png|.*?\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|woff2?|map)).*$', 
+    re_path(r'^(?!api|edushare-boshqaruv-2026|admin|media|static|assets|accounts|sitemap\.xml|robots\.txt|google94bc4a68fc393c2a\.html|favicon\.ico|logo\.png|.*?\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|woff2?|map)).*$', 
            TemplateView.as_view(template_name='index.html'), name='react-app'),
 
 
