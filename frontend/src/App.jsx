@@ -118,32 +118,7 @@ function App() {
     return HORIZONTAL_ROUTES.includes(location.pathname);
   }, [location.pathname]);
 
-  // Custom cursor — only on desktop (no touch)
-  useEffect(() => {
-    // Skip on touch devices
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
 
-    const cursor = document.querySelector('.custom-cursor');
-    const follower = document.querySelector('.custom-cursor-follower');
-    if (!cursor || !follower) return;
-
-    let rafId;
-    const moveCursor = (e) => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        cursor.style.left = `${e.clientX}px`;
-        cursor.style.top = `${e.clientY}px`;
-        follower.style.left = `${e.clientX}px`;
-        follower.style.top = `${e.clientY}px`;
-      });
-    };
-
-    window.addEventListener('mousemove', moveCursor, { passive: true });
-    return () => {
-      window.removeEventListener('mousemove', moveCursor);
-      cancelAnimationFrame(rafId);
-    };
-  }, []);
 
   // Horizontal scroll progress bar + wheel → horizontal scroll (only for horizontal routes)
   useEffect(() => {
@@ -219,8 +194,7 @@ function App() {
       <AuthCallbackHandler />
       <div className="app" role="application" aria-label="EduShare School ta'lim platformasi">
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-        <div className="custom-cursor" aria-hidden="true"></div>
-        <div className="custom-cursor-follower" aria-hidden="true"></div>
+
         <div className="scroll-progress" role="progressbar" aria-label="Sahifa scroll progressi" aria-hidden="true"></div>
         <Navbar />
         <Suspense fallback={null}>

@@ -560,16 +560,7 @@
   }
 }
 
-/* ──── Prevent cursor override on chatbot elements ──── */
-@media (hover: hover) and (pointer: fine) {
-
-  .ai-chat-input,
-  .ai-chat-send,
-  .ai-chat-toggle,
-  .ai-chat-action-btn {
-    cursor: none !important;
-  }
-}
+/* ──── Prevent cursor override on chatbot elements (disabled) ──── */
 
 /* ──── Desktop: chat ochiq bo'lganda toggle yuqoriga ──── */
 @media (min-width: 769px) {

@@ -41,12 +41,7 @@
   box-sizing: border-box;
 }
 
-/* Custom cursor only on desktop */
-@media (hover: hover) and (pointer: fine) {
-  * {
-    cursor: none !important;
-  }
-}
+/* Custom cursor disabled, using standard system cursor */
 
 html,
 body {
@@ -143,31 +138,7 @@ h2 {
   text-transform: uppercase;
 }
 
-/* Custom Cursor - Opus Multi-Neon Style (Desktop only) */
-.custom-cursor {
-  width: 12px;
-  height: 12px;
-  background: #F7E7Ce;
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 99999;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 15px rgba(247, 231, 206, 0.8), 0 0 30px rgba(247, 231, 206, 0.5);
-}
 
-.custom-cursor-follower {
-  width: 45px;
-  height: 45px;
-  border: 1.5px solid #F7E7Ce;
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 99998;
-  transition: transform 0.12s ease-out;
-  transform: translate(-50%, -50%);
-  opacity: 0.4;
-}
 
 /* Premium Buttons */
 .btn {
@@ -264,15 +235,7 @@ input:-webkit-autofill:focus {
 
 /* ================ MOBILE RESPONSIVE ================ */
 
-/* Hide custom cursor on touch devices */
-@media (hover: none),
-(pointer: coarse) {
 
-  .custom-cursor,
-  .custom-cursor-follower {
-    display: none !important;
-  }
-}
 
 /* Tablet and below — switch to vertical scroll */
 @media (max-width: 1024px) {
