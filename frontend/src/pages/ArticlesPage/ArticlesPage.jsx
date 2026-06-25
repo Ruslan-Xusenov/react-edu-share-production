@@ -12,7 +12,7 @@ const ArticleCard = memo(({ article, user, onArticleDelete }) => (
         animate={{ opacity: 1, y: 0 }}
         className="article-card glass"
     >
-        <div className="card-image">
+        <div className="card-thumb">
             <Link to={`/community/articles/${article.slug}`}>
                 {article.thumbnail_url ? (
                     <img src={article.thumbnail_url} alt={article.title} loading="lazy" />
