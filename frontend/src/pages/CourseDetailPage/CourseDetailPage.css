@@ -209,6 +209,8 @@
 .description-text {
     line-height: 1.6;
     font-size: 0.95rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Sidebar */
@@ -678,6 +680,31 @@
 
     .course-features li {
         font-size: 0.75rem;
+    }
+
+    .external-link-content {
+        padding: 1.5rem;
+        margin: 0 0.5rem;
+    }
+
+    .external-link-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .external-link-content p {
+        font-size: 0.85rem;
+    }
+
+    .description-text {
+        font-size: 0.85rem;
+    }
+
+    .watch-header h1.watch-title {
+        font-size: 0.95rem;
+    }
+
+    .comments-section h3 {
+        font-size: 0.95rem;
     }
 }
 
