@@ -377,7 +377,7 @@
     .course-card {
         width: 80vw !important;
         max-width: 320px;
-
+        flex-shrink: 0;
         scroll-snap-align: center;
         margin: 0;
         height: auto;

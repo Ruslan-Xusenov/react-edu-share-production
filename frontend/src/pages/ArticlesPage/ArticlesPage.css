@@ -232,7 +232,12 @@
     overflow: hidden;
 }
 
-.link-arrow {
+.card-content a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.read-more-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -244,7 +249,7 @@
     transition: var(--transition);
 }
 
-.link-arrow:hover {
+.read-more-link:hover {
     gap: 12px;
 }
 

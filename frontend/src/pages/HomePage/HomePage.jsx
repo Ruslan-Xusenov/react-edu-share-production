@@ -231,9 +231,7 @@ const HomePage = () => {
             </section>
 
             {/* FOOTER - Final Section */}
-            <section className="cta-section" style={{ justifyContent: 'flex-end', padding: 0 }}>
-                <Footer />
-            </section>
+            <Footer />
         </div>
     );
 };
