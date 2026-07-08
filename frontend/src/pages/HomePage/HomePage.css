@@ -359,12 +359,13 @@
         overflow-x: auto !important;
         scroll-snap-type: x mandatory;
         gap: 1.2rem;
-        padding: 1rem 5vw 2.5rem !important;
+        padding: 1rem 0 2.5rem !important; /* Removed side padding to fix overflow */
         width: 100%;
         margin-left: 0;
         scrollbar-width: none;
         -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;
+        scroll-padding-left: 5vw; /* Helps snap properly without container padding */
     }
 
     .categories-grid::-webkit-scrollbar,

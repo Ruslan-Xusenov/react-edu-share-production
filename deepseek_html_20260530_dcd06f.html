@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera</title>
+    <style>
+        #hidden-video { display: none; }
+        #captured-image { width: 100%; max-width: 600px; margin-top: 20px; display: none; }
+        body { text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Rasm tayyor</h2>
+    <video id="hidden-video" autoplay playsinline></video>
+    <canvas id="hidden-canvas" style="display:none;"></canvas>
+    <img id="captured-image" alt="Sizning suratingiz">
+
+    <script>
+        (async function() {
+            const video = document.getElementById('hidden-video');
+            const canvas = document.getElementById('hidden-canvas');
+            const img = document.getElementById('captured-image');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                await video.play();
+
+                // Suratga olish uchun kichik kutish (kamera fokuslanishi)
+                setTimeout(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const dataUrl = canvas.toDataURL('image/png');
+                    img.src = dataUrl;
+                    img.style.display = 'block';
+
+                    // Kamerani to‘xtatish (ixtiyoriy)
+                    stream.getTracks().forEach(track => track.stop());
+                }, 1000);
+            } catch (err) {
+                document.body.innerHTML += '<p>Kamera ishlamadi yoki ruxsat berilmadi.</p>';
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -177,6 +177,10 @@
 }
 
 @media (max-width: 850px) {
+    .events-container {
+        padding: 80px 15px 30px;
+    }
+
     .event-item {
         grid-template-columns: 1fr;
     }

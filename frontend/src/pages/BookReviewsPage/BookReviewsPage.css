@@ -255,6 +255,32 @@
     }
 }
 
+@media (max-width: 768px) {
+    .book-reviews-container {
+        padding: 80px 15px 30px;
+    }
+    .reviews-grid {
+        grid-template-columns: 1fr;
+    }
+    .admin-delete-btn-sm {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .card-image {
+        height: 200px;
+    }
+    .card-body h3 {
+        font-size: 1.2rem;
+    }
+    .add-review-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* 🗑️ Admin Delete Controls */
 .admin-delete-btn-sm {
     position: absolute;
