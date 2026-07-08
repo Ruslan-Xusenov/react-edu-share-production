@@ -1,0 +1,43 @@
+# EduShare School
+
+> O'zbekistondagi bepul onlayn ta'lim platformasi. O'quvchilar bir-birlariga o'rgatadi va o'rganadi.
+> Dasturlash, matematika, ingliz tili, sport, musiqa va boshqa fanlar bo'yicha bepul video kurslar va darslar.
+> Barcha kurslar, darslar va sertifikatlar mutlaqo bepul taqdim etiladi.
+
+## Asosiy sahifalar
+
+- [Bosh sahifa](https://edushare.uz/): Platforma haqida umumiy ma'lumot, statistika va kurslar tanlovi
+- [Kurslar katalogi](https://edushare.uz/courses): Barcha kurslar — IT, Sport, Musiqa, Ingliz tili va boshqalar
+- [Reyting (Leaderboard)](https://edushare.uz/leaderboard): O'quvchilar reytingi va ball tizimi
+- [Biz haqimizda](https://edushare.uz/about): EduShare School missiyasi, jamoa va qadriyatlar
+- [Ro'yxatdan o'tish](https://edushare.uz/signup): Yangi hisob yaratish
+- [Kirish](https://edushare.uz/login): Mavjud hisob bilan kirish
+- [Profil](https://edushare.uz/profile): Foydalanuvchi profili va statistika
+- [Mening darslarim](https://edushare.uz/my-learning): O'tilgan va davom etayotgan kurslar
+
+## Jamiyat (Community)
+
+- [Yangiliklar (News)](https://edushare.uz/community/news): O'quvchilar maqolalari va ta'lim yangiliklari
+- [Kitob tahlillari](https://edushare.uz/community/books): Kitoblar haqida sharhlar va tavsiyalar
+- [E'lonlar](https://edushare.uz/community/events): Platforma va ta'lim bo'yicha e'lonlar
+
+## API
+
+- [Kurslar API](https://edushare.uz/api/lessons/): Barcha kurslar ro'yxati (JSON)
+- [Kategoriyalar API](https://edushare.uz/api/categories/): Kurs kategoriyalari (JSON)
+- [Maqolalar API](https://edushare.uz/api/community/articles/): Jamiyat maqolalari (JSON)
+
+## Platforma haqida
+
+**EduShare School** — bu peer-to-peer (tengdoshlardan o'rganish) tamoyiliga asoslangan ta'lim platformasi.
+O'quvchilar o'zlari yaratgan kurslar orqali boshqalarga bilim ulashadi.
+
+**Asoschilari:** Ruslan Xusenov (Founder & Developer), Elbek Sharofov (Co-Founder)
+
+**Texnologiyalar:** Django (backend), React + Vite (frontend), PostgreSQL, Nginx
+
+**Til:** O'zbek tili (asosiy), Rus tili, Ingliz tili
+
+**Manzil:** O'zbekiston
+
+**Aloqa:** support@edushare.uz | https://t.me/edushare_uz
