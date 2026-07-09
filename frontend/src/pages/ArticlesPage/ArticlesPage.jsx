@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import { FaRegNewspaper, FaRegEye, FaRegClock, FaChevronRight, FaPlus, FaPenNib, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import './ArticlesPage.css';
 
 // 🚀 Memoized Article Card for performance
@@ -231,13 +233,12 @@ const ArticlesPage = () => {
                                 </div>
                                 <div className="form-group">
                                     <label>Article Body</label>
-                                    <textarea 
-                                        required 
+                                    <ReactQuill 
+                                        theme="snow" 
+                                        value={formData.content} 
+                                        onChange={(content) => setFormData({...formData, content})} 
                                         placeholder="Write your content here..."
-                                        rows="8"
-                                        value={formData.content}
-                                        onChange={(e) => setFormData({...formData, content: e.target.value})}
-                                    ></textarea>
+                                    />
                                 </div>
                                 <div className="form-group">
                                     <label>Thumbnail Image</label>

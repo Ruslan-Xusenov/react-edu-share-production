@@ -401,3 +401,129 @@ input:-webkit-autofill:focus {
   font-weight: 800;
   cursor: pointer;
 }
+
+/* =========================================
+   Rich Text Formatted Content Styles
+   (Used for CKEditor HTML output)
+   ========================================= */
+.formatted-content {
+  line-height: 1.8;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.formatted-content p {
+  margin-bottom: 1.5rem;
+}
+
+/* The Green Quote Block from the picture */
+.formatted-content blockquote {
+  background-color: #61b857; /* Nice green */
+  color: #fff;
+  padding: 20px 30px;
+  border-left: 5px solid #4a9142;
+  margin: 2rem 0;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(97, 184, 87, 0.2);
+}
+
+.formatted-content blockquote p {
+  margin-bottom: 0;
+}
+
+/* Highlighting specific words in green as in the picture */
+/* If the admin uses Bold or Span with color, it will look nice */
+.formatted-content strong {
+  font-weight: 800;
+}
+
+.formatted-content span[style*="color"] {
+  /* This ensures if admin picks a color, it's legible */
+  font-weight: 600;
+}
+
+/* Headings inside formatted content */
+.formatted-content h1,
+.formatted-content h2,
+.formatted-content h3,
+.formatted-content h4 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-heading);
+  text-transform: none; /* Keep natural casing for articles */
+  letter-spacing: normal;
+}
+
+.formatted-content h2 {
+  font-size: 2rem;
+}
+
+.formatted-content h3 {
+  font-size: 1.5rem;
+}
+
+.formatted-content ul,
+.formatted-content ol {
+  margin-left: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.formatted-content li {
+  margin-bottom: 0.5rem;
+}
+
+.formatted-content a {
+  color: #61b857;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.formatted-content a:hover {
+  color: #4a9142;
+}
+
+.formatted-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin: 1.5rem 0;
+}
+
+/* =========================================
+   React Quill Dark Theme Overrides
+   ========================================= */
+.ql-toolbar.ql-snow, .ql-container.ql-snow {
+  border-color: var(--border) !important;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ql-toolbar.ql-snow {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none !important;
+}
+.ql-container.ql-snow {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+}
+.ql-editor {
+  min-height: 150px;
+}
+.ql-snow .ql-stroke {
+  stroke: var(--text-secondary) !important;
+}
+.ql-snow .ql-fill {
+  fill: var(--text-secondary) !important;
+}
+.ql-snow .ql-picker {
+  color: var(--text-secondary) !important;
+}
+.ql-snow .ql-picker-options {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border) !important;
+}

@@ -702,9 +702,7 @@ const CourseDetailPage = () => {
                                     <div className="overview-content">
                                         <div className="description-box">
                                             <p>{course.views} ko'rishlar • {new Date(course.created_at).toLocaleDateString()}</p>
-                                            <div className="description-text">
-                                                {course.description}
-                                            </div>
+                                            <div className="description-text formatted-content" dangerouslySetInnerHTML={{ __html: course.description }} />
                                         </div>
                                     </div>
                                 )}

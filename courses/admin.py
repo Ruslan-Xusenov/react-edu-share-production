@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.core.exceptions import ValidationError
+from django.db import models
+from ckeditor.widgets import CKEditorWidget
 from .models import Category, SubCategory, SubSubCategory, Lesson, Assignment, Submission, Certificate, LessonLike, LessonQuiz
 
 
@@ -66,6 +68,9 @@ class LessonAdmin(admin.ModelAdmin):
             'fields': ('views', 'likes', 'is_published')
         })
     )
+    formfield_overrides = {
+        models.TextField: {'widget': CKEditorWidget}
+    }
     
     def has_test(self, obj):
         if obj.id:

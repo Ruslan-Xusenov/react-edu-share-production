@@ -8,6 +8,8 @@ import {
     FaQuestionCircle, FaTrash, FaCheckCircle
 } from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import './CreateLessonPage.css';
 
 const CreateLessonPage = () => {
@@ -265,7 +267,11 @@ const CreateLessonPage = () => {
                                 </div>
                                 <div className="form-group">
                                     <label>Tavsif</label>
-                                    <textarea name="description" value={formData.description} onChange={handleChange} rows={4} required />
+                                    <ReactQuill 
+                                        theme="snow" 
+                                        value={formData.description} 
+                                        onChange={(content) => setFormData(prev => ({ ...prev, description: content }))} 
+                                    />
                                 </div>
 
                                 <div className="form-row">

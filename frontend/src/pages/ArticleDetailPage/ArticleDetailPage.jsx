@@ -112,7 +112,7 @@ const ArticleDetailPage = () => {
 
                     {/* Rendered content */}
                     <div
-                        className="ad-content"
+                        className="ad-content formatted-content"
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
                 </motion.main>

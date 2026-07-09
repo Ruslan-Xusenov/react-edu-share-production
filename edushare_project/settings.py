@@ -59,6 +59,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     
+    # Editor
+    'ckeditor',
+    
     # Authentication
     'allauth',
     'allauth.account',
@@ -541,3 +544,23 @@ try:
     from .security_settings import *
 except ImportError:
     pass
+
+# CKEditor Configuration
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink'],
+            ['RemoveFormat', 'Source'],
+            '/',
+            ['Styles', 'Format', 'Font', 'FontSize'],
+            ['TextColor', 'BGColor'],
+            ['Maximize', 'ShowBlocks']
+        ],
+        'extraPlugins': 'colorbutton,colordialog,font,justify',
+        'width': '100%',
+    }
+}

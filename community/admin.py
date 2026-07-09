@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import models
+from ckeditor.widgets import CKEditorWidget
 from .models import BookReview, Article, Announcement
 
 @admin.register(BookReview)
@@ -13,6 +15,9 @@ class ArticleAdmin(admin.ModelAdmin):
     list_filter = ['is_published', 'created_at']
     search_fields = ['title', 'content', 'author__full_name']
     prepopulated_fields = {'slug': ('title',)}
+    formfield_overrides = {
+        models.TextField: {'widget': CKEditorWidget}
+    }
 
 @admin.register(Announcement)
 class AnnouncementAdmin(admin.ModelAdmin):
