@@ -1,7 +1,3 @@
-#!/bin/bash
-
-# EduShare Startup Script (Linux/Mac)
-# Ranglar
 CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
@@ -13,7 +9,6 @@ echo -e "${CYAN}==========================================${NC}"
 echo -e "${CYAN}   EDUSHARE - STARTING ALL SERVICES      ${NC}"
 echo -e "${CYAN}==========================================${NC}"
 
-# 0. Clean up existing processes on ports 8000 and 5173
 echo -e "${GRAY}Eski jarayonlar tozalanmoqda...${NC}"
 for port in 8000 5173; do
     pid=$(lsof -t -i:$port)
@@ -23,10 +18,8 @@ for port in 8000 5173; do
     fi
 done
 
-# 1. Start Backend (Django)
 echo -e "${YELLOW}[1/2] Backend ishga tushirilmoqda (Django)...${NC}"
 if [ -f "venv/bin/python" ]; then
-    # Daemonsiz logga yozib ishga tushiramiz
     nohup venv/bin/python manage.py runserver 0.0.0.0:8000 > backend.log 2>&1 &
     echo -e "${GREEN}Backend http://127.0.0.1:8000 da ishga tushdi (Log: backend.log)${NC}"
 else
@@ -35,7 +28,6 @@ else
     exit 1
 fi
 
-# 2. Start Frontend (React/Vite)
 echo -e "${YELLOW}[2/2] Frontend ishga tushirilmoqda (Vite)...${NC}"
 if [ -d "frontend" ]; then
     cd frontend

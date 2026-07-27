@@ -1,10 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
-import { FaLock, FaEnvelope, FaGoogle } from 'react-icons/fa';
-import { HiOutlineAcademicCap } from 'react-icons/hi2';
-import { BsStars, BsShieldCheck, BsLightningCharge, BsGlobe2 } from 'react-icons/bs';
 import './AuthPage.css';
 
 import apiClient, { API_ENDPOINTS, BACKEND_URL } from '../../config/api';

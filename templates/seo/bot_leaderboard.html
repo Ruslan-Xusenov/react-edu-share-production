@@ -1,0 +1,23 @@
+{% extends "seo/bot_base.html" %}
+{% block head %}
+<title>O'quvchilar Reytingi — EduShare School | TOP O'quvchilar</title>
+<meta name="description" content="EduShare School platformasining eng faol va muvaffaqiyatli o'quvchilari reytingi. O'rganing, ball to'plang va liderlar jadvaliga kiring!" />
+<link rel="canonical" href="https://edushare.uz/leaderboard" />
+{% endblock %}
+{% block content %}
+<h1>O'quvchilar Reytingi — EduShare School</h1>
+<p>Platformamizning eng faol o'quvchilari. Kurslarni tugatib ball to'plang va liderlar jadvaliga kiring!</p>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;width:100%">
+  <thead><tr><th>#</th><th>Ism</th><th>Ball</th></tr></thead>
+  <tbody>
+  {% for u in top_users %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ u.full_name }}</td>
+      <td>{{ u.points }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p><a href="/courses">Kurslar orqali ball to'plash →</a></p>
+{% endblock %}

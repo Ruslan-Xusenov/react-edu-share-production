@@ -38,11 +38,13 @@ function CourseListItem({ item }) {
       </View>
 
       <View style={styles.cardBody}>
-        {item.subcategory?.name && (
-          <Text style={styles.catLabel}>{item.subcategory.name}</Text>
+        {item.category?.name && (
+          <Text style={styles.catLabel}>{item.category.name}</Text>
         )}
         <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
-        <Text style={styles.cardDesc} numberOfLines={2}>{item.description}</Text>
+        <Text style={styles.cardDesc} numberOfLines={2}>
+          {item.description ? item.description.replace(/<[^>]*>?/gm, '').trim() : ''}
+        </Text>
 
         <View style={styles.cardFooter}>
           <View style={styles.cardStat}>
@@ -55,10 +57,12 @@ function CourseListItem({ item }) {
               {item.rating ? Number(item.rating).toFixed(1) : '5.0'}
             </Text>
           </View>
-          <View style={styles.cardStat}>
-            <Ionicons name="time-outline" size={13} color={COLORS.textMuted} />
-            <Text style={styles.cardStatText}>{item.duration || '—'}</Text>
-          </View>
+          {item.duration ? (
+            <View style={styles.cardStat}>
+              <Ionicons name="time-outline" size={13} color={COLORS.textMuted} />
+              <Text style={styles.cardStatText}>{item.duration}</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.cardAction}>
@@ -99,7 +103,7 @@ export default function CoursesScreen() {
       lesson.title?.toLowerCase().includes(search.toLowerCase()) ||
       lesson.description?.toLowerCase().includes(search.toLowerCase());
     const matchCat = !selectedCategory ||
-      lesson.subcategory?.category?.id === selectedCategory;
+      lesson.category?.id === selectedCategory;
     return matchSearch && matchCat;
   });
 
@@ -130,24 +134,26 @@ export default function CoursesScreen() {
 
       {/* Categories */}
       {categories.length > 0 && (
-        <FlatList
-          data={[{ id: null, name: 'Hammasi' }, ...categories]}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => String(item.id)}
-          style={styles.catList}
-          contentContainerStyle={{ paddingHorizontal: SPACING.md, gap: 8 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.catChip, selectedCategory === item.id && styles.catChipActive]}
-              onPress={() => setSelectedCategory(item.id)}
-            >
-              <Text style={[styles.catChipText, selectedCategory === item.id && styles.catChipTextActive]}>
-                {item.name}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
+        <View style={styles.catListContainer}>
+          <FlatList
+            data={[{ id: null, name: 'Hammasi' }, ...categories]}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => String(item.id)}
+            style={styles.catList}
+            contentContainerStyle={{ paddingHorizontal: SPACING.md, gap: 8 }}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.catChip, selectedCategory === item.id && styles.catChipActive]}
+                onPress={() => setSelectedCategory(item.id)}
+              >
+                <Text style={[styles.catChipText, selectedCategory === item.id && styles.catChipTextActive]}>
+                  {item.display_name || item.name}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
       )}
 
       {/* List */}
@@ -192,7 +198,8 @@ const styles = StyleSheet.create({
   },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, color: COLORS.text, fontSize: FONTS.sizes.md },
-  catList: { maxHeight: 48, marginBottom: SPACING.sm },
+  catListContainer: { height: 40, marginBottom: SPACING.md, flexShrink: 0 },
+  catList: { flex: 1 },
   catChip: {
     paddingHorizontal: SPACING.md, paddingVertical: 7,
     borderRadius: RADIUS.full, backgroundColor: COLORS.surface,

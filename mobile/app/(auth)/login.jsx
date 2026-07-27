@@ -34,6 +34,8 @@ export default function LoginScreen() {
   const login = useAuthStore((s) => s.login);
   const googleLogin = useAuthStore((s) => s.googleLogin);
 
+  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+
   // Google Auth Request
   const [request, response, promptAsync] = Google.useAuthRequest({
     expoClientId: GOOGLE_EXPO_CLIENT_ID,
@@ -41,7 +43,13 @@ export default function LoginScreen() {
     iosClientId: GOOGLE_IOS_CLIENT_ID,
     webClientId: GOOGLE_WEB_CLIENT_ID,
     scopes: ['profile', 'email'],
+    redirectUri,
   });
+
+  React.useEffect(() => {
+    // Google Cloud Console uchun qaysi Redirect URI kerakligini terminalga chiqaramiz
+    console.log("Diqqat! Google Cloud Console'ga qo'shilishi kerak bo'lgan Redirect URI:", redirectUri);
+  }, []);
 
   // Google javob kuzatish
   React.useEffect(() => {

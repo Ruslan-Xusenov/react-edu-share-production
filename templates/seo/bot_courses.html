@@ -1,0 +1,30 @@
+{% extends "seo/bot_base.html" %}
+{% block head %}
+<title>Bepul IT va Dasturlash Kurslari O'zbekiston | EduShare School</title>
+<meta name="description" content="O'zbekistondagi bepul dasturlash kurslari. Python, JavaScript, matematika, sport — bepul o'rganish Toshkent va butun O'zbekiston uchun." />
+<link rel="canonical" href="https://edushare.uz/courses" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","name":"Bepul Onlayn Kurslar — EduShare","url":"https://edushare.uz/courses","itemListElement":[{% for l in lessons %}{"@type":"ListItem","position":{{ forloop.counter }},"name":"{{ l.title|escapejs }}","url":"https://edushare.uz/courses/{{ l.id }}"}{% if not forloop.last %},{% endif %}{% endfor %}]}</script>
+{% endblock %}
+{% block content %}
+<h1>Bepul IT va Dasturlash Kurslari — O'zbekiston | EduShare</h1>
+<p>O'zbekistondagi bepul onlayn kurslar katalogi: dasturlash, matematika, fan, sport, musiqa va tillar. Hozir boshlang!</p>
+
+<h2>Kategoriyalar</h2>
+<ul>
+{% for cat in categories %}
+  <li><a href="/courses?category={{ cat.slug }}">{{ cat.display_name }}</a>{% if cat.description %} — {{ cat.description }}{% endif %}</li>
+{% endfor %}
+</ul>
+
+<h2>Barcha Bepul Kurslar ({{ lessons|length }}+)</h2>
+<div class="grid">
+{% for lesson in lessons %}
+  <div class="card">
+    <span class="badge">{{ lesson.category.display_name|default:"Umumiy" }}</span>
+    <h3><a href="/courses/{{ lesson.id }}">{{ lesson.title }}</a></h3>
+    <p>{{ lesson.description|truncatechars:100 }}</p>
+    {% if lesson.instructor %}<small>O'qituvchi: {{ lesson.instructor.full_name }}</small>{% endif %}
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

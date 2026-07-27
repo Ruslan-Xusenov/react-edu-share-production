@@ -1,0 +1,29 @@
+{% extends "seo/bot_base.html" %}
+{% block head %}
+<title>{{ lesson.title }} — Bepul Dars | EduShare School</title>
+<meta name="description" content="{{ lesson.title }} — {{ lesson.description|truncatechars:150 }}. Bepul ko'ring va sertifikat oling!" />
+<link rel="canonical" href="https://edushare.uz/courses/{{ lesson.id }}" />
+<meta property="og:title" content="{{ lesson.title }} — EduShare" />
+<meta property="og:type" content="article" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Course","name":"{{ lesson.title|escapejs }}","description":"{{ lesson.description|truncatechars:300|escapejs }}","url":"https://edushare.uz/courses/{{ lesson.id }}","provider":{"@type":"Organization","name":"EduShare School","url":"https://edushare.uz"},"offers":{"@type":"Offer","price":"0","priceCurrency":"UZS","availability":"https://schema.org/InStock","category":"Free"},"courseMode":"Online","isAccessibleForFree":true,"inLanguage":"uz"{% if lesson.instructor %},"instructor":{"@type":"Person","name":"{{ lesson.instructor.full_name|escapejs }}"}{% endif %}}</script>
+{% endblock %}
+{% block content %}
+<h1>{{ lesson.title }}</h1>
+{% if lesson.category %}<span class="badge">{{ lesson.category.display_name }}</span>{% endif %}
+
+<p>{{ lesson.description }}</p>
+
+<div class="card">
+  <h2>Kurs Ma'lumotlari</h2>
+  <ul>
+    {% if lesson.instructor %}<li><strong>O'qituvchi:</strong> {{ lesson.instructor.full_name }}</li>{% endif %}
+    {% if lesson.category %}<li><strong>Kategoriya:</strong> <a href="/courses?category={{ lesson.category.slug }}">{{ lesson.category.display_name }}</a></li>{% endif %}
+    <li><strong>Narx:</strong> Bepul (0 so'm)</li>
+    <li><strong>Til:</strong> O'zbek tili</li>
+    <li><strong>Sertifikat:</strong> Ha, muvaffaqiyatli tugatgandan so'ng</li>
+  </ul>
+</div>
+
+<p><a href="https://edushare.uz/courses/{{ lesson.id }}">Kursni boshlash — Bepul</a></p>
+<p><a href="/courses">← Barcha kurslarga qaytish</a></p>
+{% endblock %}

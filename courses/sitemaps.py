@@ -1,5 +1,6 @@
 from django.contrib.sitemaps import Sitemap
 from .models import Lesson, Category
+from community.models import Article
 
 
 class LessonSitemap(Sitemap):
@@ -31,6 +32,23 @@ class CategorySitemap(Sitemap):
         return f'/courses?category={obj.slug}'
 
 
+# ✅ SEO FIX: Maqolalar sitemap'ga qo'shildi — Google blog kontent topadi
+class ArticleSitemap(Sitemap):
+    changefreq = "daily"
+    priority = 0.8
+    protocol = 'https'
+
+    def items(self):
+        return Article.objects.filter(is_published=True).order_by('-created_at')
+
+    def lastmod(self, obj):
+        return obj.updated_at
+
+    def location(self, obj):
+        # React frontend blog article URL
+        return f'/community/articles/{obj.slug}'
+
+
 class StaticViewSitemap(Sitemap):
     changefreq = 'daily'
     protocol = 'https'
@@ -40,6 +58,10 @@ class StaticViewSitemap(Sitemap):
         '/courses': 0.9,
         '/about': 0.8,
         '/leaderboard': 0.7,
+        # Blog sahifasi — raqobatchilar kabi organik trafik uchun
+        '/community/news': 0.85,
+        '/community/books': 0.6,
+        '/community/events': 0.6,
         '/login': 0.3,
         '/signup': 0.3,
     }

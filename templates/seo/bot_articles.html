@@ -1,0 +1,22 @@
+{% extends "seo/bot_base.html" %}
+{% block head %}
+<title>Ta'lim Maqolalari va Yangiliklar — EduShare Blog | O'zbekiston</title>
+<meta name="description" content="EduShare blog: O'zbekistonda IT, dasturlash, matematika va ta'lim bo'yicha bepul maqolalar. Python vs Java, IT da qanday daromad topish va ko'p maqolalar." />
+<link rel="canonical" href="https://edushare.uz/community/news" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","name":"EduShare Blog","url":"https://edushare.uz/community/news","inLanguage":"uz","publisher":{"@type":"Organization","name":"EduShare School","url":"https://edushare.uz"}}</script>
+{% endblock %}
+{% block content %}
+<h1>EduShare Blog — Ta'lim va IT Maqolalari | O'zbekiston</h1>
+<p>O'zbekistonda IT, dasturlash va ta'lim sohasidagi eng so'nggi maqolalar, tahlillar va foydali ko'rsatmalar.</p>
+
+<div class="grid">
+{% for article in articles %}
+  <div class="card">
+    <h2><a href="/community/articles/{{ article.slug }}">{{ article.title }}</a></h2>
+    <small>{{ article.created_at|date:"d.m.Y" }} | {{ article.author.full_name }}</small>
+    <p>{{ article.content|striptags|truncatechars:150 }}</p>
+    <a href="/community/articles/{{ article.slug }}">O'qish →</a>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

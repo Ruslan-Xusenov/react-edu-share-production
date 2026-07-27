@@ -10,7 +10,7 @@ from django.urls import reverse
 
 
 def course_list(request):
-    lessons = Lesson.objects.filter(is_published=True).order_by('-created_at')
+    lessons = Lesson.objects.select_related('author', 'sub_sub_category__sub_category__category').filter(is_published=True).order_by('-created_at')
     categories = Category.objects.all()
     
     category_id = request.GET.get('category')
@@ -42,7 +42,7 @@ def course_list(request):
 
 def category_detail(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    lessons = Lesson.objects.filter(
+    lessons = Lesson.objects.select_related('author', 'sub_sub_category').filter(
         sub_sub_category__sub_category__category=category,
         is_published=True
     ).order_by('-created_at')
@@ -55,7 +55,7 @@ def category_detail(request, category_id):
 
 
 def lesson_detail(request, lesson_id):
-    lesson = get_object_or_404(Lesson, id=lesson_id, is_published=True)
+    lesson = get_object_or_404(Lesson.objects.select_related('author', 'sub_sub_category', 'assignment'), id=lesson_id, is_published=True)
     
     viewed_lessons = request.session.get('viewed_lessons', [])
     if lesson_id not in viewed_lessons:
@@ -119,7 +119,7 @@ def lesson_detail(request, lesson_id):
         'has_liked': has_liked,
         'user_submission': user_submission,
         'comment_form': comment_form,
-        'comments': lesson.comments.filter(parent__isnull=True),
+        'comments': lesson.comments.select_related('user').prefetch_related('replies__user', 'liked_by', 'disliked_by').filter(parent__isnull=True),
     }
     return render(request, 'courses/lesson_detail.html', context)
 
@@ -253,7 +253,7 @@ def submit_assignment(request, assignment_id):
 
 @login_required
 def my_lessons(request):
-    lessons = Lesson.objects.filter(author=request.user).order_by('-created_at')
+    lessons = Lesson.objects.select_related('sub_sub_category').filter(author=request.user).order_by('-created_at')
     
     context = {
         'lessons': lessons,
@@ -263,8 +263,8 @@ def my_lessons(request):
 
 @login_required
 def my_learning(request):
-    submissions = Submission.objects.filter(user=request.user).order_by('-submitted_at')
-    certificates = Certificate.objects.filter(user=request.user).order_by('-issued_at')
+    submissions = Submission.objects.select_related('assignment__lesson', 'assignment__lesson__author').filter(user=request.user).order_by('-submitted_at')
+    certificates = Certificate.objects.select_related('lesson').filter(user=request.user).order_by('-issued_at')
     
     context = {
         'submissions': submissions,

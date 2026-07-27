@@ -107,18 +107,18 @@ export default function HomeScreen() {
         </LinearGradient>
 
         {/* Stats qatorlar */}
-        {statsData && (
+        {statsData && statsData.stats && (
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Text style={styles.statNum}>{statsData.total_lessons || 0}</Text>
+              <Text style={styles.statNum}>{statsData.stats.lessons || 0}</Text>
               <Text style={styles.statLabel}>Kurslar</Text>
             </View>
             <View style={[styles.statBox, styles.statBoxMid]}>
-              <Text style={styles.statNum}>{statsData.total_students || 0}</Text>
+              <Text style={styles.statNum}>{statsData.stats.students || 0}</Text>
               <Text style={styles.statLabel}>O'quvchilar</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={styles.statNum}>{statsData.total_certificates || 0}</Text>
+              <Text style={styles.statNum}>{statsData.stats.certificates || 0}</Text>
               <Text style={styles.statLabel}>Sertifikatlar</Text>
             </View>
           </View>
@@ -173,7 +173,7 @@ export default function HomeScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>✨ Yangi kurslar</Text>
             <TouchableOpacity onPress={() => router.push('/courses')}>
-              <Text style={styles.seeAll}>Barchasini ko'r</Text>
+              <Text style={styles.seeAll}>Barchasi </Text>
             </TouchableOpacity>
           </View>
 

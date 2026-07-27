@@ -9,7 +9,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
+import YoutubePlayer from 'react-native-youtube-iframe';
+import RenderHtml from 'react-native-render-html';
 import Toast from 'react-native-toast-message';
 import apiClient, { API_ENDPOINTS, BASE_URL } from '../../src/api/client';
 import useAuthStore from '../../src/hooks/useAuthStore';
@@ -157,12 +158,18 @@ export default function CourseDetailScreen() {
         {/* Video / Thumbnail */}
         <View style={styles.videoWrap}>
           {ytId ? (
-            <WebView
-              style={styles.video}
-              source={{ uri: `https://www.youtube.com/embed/${ytId}?autoplay=0&playsinline=1` }}
-              allowsFullscreenVideo
-              javaScriptEnabled
-            />
+            <View style={{ width: '100%', height: 220, overflow: 'hidden' }}>
+              <YoutubePlayer
+                height={220}
+                play={false}
+                videoId={ytId}
+                initialPlayerParams={{
+                  preventFullScreen: false,
+                  rel: 0,
+                  modestbranding: 1,
+                }}
+              />
+            </View>
           ) : imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.video} resizeMode="cover" />
           ) : (
@@ -189,14 +196,18 @@ export default function CourseDetailScreen() {
               <Ionicons name="star" size={14} color="#FFD700" />
               <Text style={styles.statItemText}>{lesson.rating ? Number(lesson.rating).toFixed(1) : '5.0'}</Text>
             </View>
-            <View style={styles.statItem}>
-              <Ionicons name="time-outline" size={14} color={COLORS.textMuted} />
-              <Text style={styles.statItemText}>{lesson.duration || '—'}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Ionicons name="bar-chart-outline" size={14} color={COLORS.textMuted} />
-              <Text style={styles.statItemText}>{lesson.level || 'Boshlang\'ich'}</Text>
-            </View>
+            {lesson.duration ? (
+              <View style={styles.statItem}>
+                <Ionicons name="time-outline" size={14} color={COLORS.textMuted} />
+                <Text style={styles.statItemText}>{lesson.duration}</Text>
+              </View>
+            ) : null}
+            {lesson.level ? (
+              <View style={styles.statItem}>
+                <Ionicons name="bar-chart-outline" size={14} color={COLORS.textMuted} />
+                <Text style={styles.statItemText}>{lesson.level}</Text>
+              </View>
+            ) : null}
           </View>
 
           {/* Action buttons */}
@@ -289,7 +300,18 @@ export default function CourseDetailScreen() {
         <View style={styles.tabContent}>
           {tab === 'about' && (
             <View>
-              <Text style={styles.desc}>{lesson.description || 'Tavsif mavjud emas'}</Text>
+              {lesson.description ? (
+                <RenderHtml
+                  contentWidth={width - SPACING.md * 2}
+                  source={{ html: lesson.description }}
+                  tagsStyles={{
+                    body: { color: COLORS.textSecondary, fontSize: FONTS.sizes.md, lineHeight: 24, margin: 0 },
+                    p: { margin: 0, padding: 0, marginBottom: 8 }
+                  }}
+                />
+              ) : (
+                <Text style={styles.desc}>Tavsif mavjud emas</Text>
+              )}
               {lesson.tags?.length > 0 && (
                 <View style={styles.tags}>
                   {lesson.tags.map((tag, i) => (

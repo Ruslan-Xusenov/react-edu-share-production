@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { FaCertificate, FaDownload, FaPrint, FaArrowLeft, FaCheckCircle, FaUserGraduate, FaAward } from 'react-icons/fa';
+import { useParams } from 'react-router-dom';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './CertificatePage.css';
 

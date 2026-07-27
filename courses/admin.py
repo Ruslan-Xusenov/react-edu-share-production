@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.core.exceptions import ValidationError
 from django.db import models
-from ckeditor.widgets import CKEditorWidget
+from django_ckeditor_5.widgets import CKEditor5Widget
 from .models import Category, SubCategory, SubSubCategory, Lesson, Assignment, Submission, Certificate, LessonLike, LessonQuiz
 
 
@@ -69,7 +69,7 @@ class LessonAdmin(admin.ModelAdmin):
         })
     )
     formfield_overrides = {
-        models.TextField: {'widget': CKEditorWidget}
+        models.TextField: {'widget': CKEditor5Widget(config_name='extends')}
     }
     
     def has_test(self, obj):

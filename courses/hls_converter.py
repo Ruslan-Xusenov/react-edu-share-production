@@ -196,24 +196,11 @@ def convert_to_hls(lesson_id, input_video_path):
 
     return success
 
-
 def convert_to_hls_async(lesson_id, input_video_path):
-    """Background thread da HLS konvertatsiya qilish"""
-    def run():
-        logger.info(f"🎬 HLS konvertatsiya boshlandi: lesson_id={lesson_id}")
-        try:
-            # Status ni 'processing' ga o'zgartirish
-            from courses.models import Lesson
-            Lesson.objects.filter(id=lesson_id).update(hls_status='processing')
-        except Exception:
-            pass
-
-        result = convert_to_hls(lesson_id, input_video_path)
-        logger.info(f"🏁 HLS konvertatsiya tugadi: lesson_id={lesson_id}, success={result}")
-
-    thread = threading.Thread(target=run, daemon=True)
-    thread.start()
-    return thread
+    """Background task da HLS konvertatsiya qilish (Celery orqali)"""
+    from courses.tasks import convert_video_to_hls_task
+    task = convert_video_to_hls_task.delay(lesson_id, input_video_path)
+    return task
 
 
 def get_hls_url(lesson_id, request=None):

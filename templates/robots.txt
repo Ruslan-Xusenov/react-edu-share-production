@@ -8,10 +8,24 @@ Allow: /about/
 Allow: /leaderboard/
 Allow: /login/
 Allow: /signup/
+# ✅ Blog va jamoat sahifalari — organik trafik uchun ochildi
+Allow: /community/
+Allow: /community/news/
+Allow: /community/articles/
+Allow: /community/books/
+Allow: /community/events/
 
 # Static and media files
 Disallow: /static/
 Disallow: /media/
+Disallow: /api/
+Disallow: /profile/
+Disallow: /my-learning/
+Disallow: /create-lesson/
+
+# Yandex uchun crawl tezligi cheklovi (server yukini kamaytirish)
+User-agent: Yandex
+Crawl-delay: 2
 
 # Sitemap
 Sitemap: https://edushare.uz/sitemap.xml

@@ -1,13 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
-import {
-    FaHeart, FaRocket, FaUsers, FaGraduationCap,
-    FaLightbulb, FaHandshake, FaGlobe,
-    FaChartLine, FaAward, FaMedal
-} from 'react-icons/fa';
+
+
 import apiClient, { API_ENDPOINTS } from '../../config/api';
-import Footer from '../../components/Footer/Footer';
 import './AboutPage.css';
 
 const AboutPage = () => {

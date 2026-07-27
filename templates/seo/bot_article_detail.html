@@ -1,0 +1,17 @@
+{% extends "seo/bot_base.html" %}
+{% block head %}
+<title>{{ article.title }} — EduShare Blog</title>
+<meta name="description" content="{{ article.content|striptags|truncatechars:160 }}" />
+<link rel="canonical" href="https://edushare.uz/community/articles/{{ article.slug }}" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="{{ article.title }} — EduShare" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"{{ article.title|escapejs }}","datePublished":"{{ article.created_at|date:'c' }}","dateModified":"{{ article.updated_at|date:'c' }}","author":{"@type":"Person","name":"{{ article.author.full_name|escapejs }}"},"publisher":{"@type":"Organization","name":"EduShare School","url":"https://edushare.uz"},"url":"https://edushare.uz/community/articles/{{ article.slug }}"}</script>
+{% endblock %}
+{% block content %}
+<h1>{{ article.title }}</h1>
+<p><small>Muallif: {{ article.author.full_name }} | {{ article.created_at|date:"d.m.Y" }} | {{ article.views }} o'qish</small></p>
+<hr />
+<div>{{ article.content|safe }}</div>
+<hr />
+<p><a href="/community/news">← Barcha maqolalarga qaytish</a></p>
+{% endblock %}

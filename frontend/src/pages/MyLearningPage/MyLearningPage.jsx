@@ -1,8 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
-import { FaBookOpen, FaClock, FaCheckCircle, FaPlayCircle, FaTrophy } from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './MyLearningPage.css';
 

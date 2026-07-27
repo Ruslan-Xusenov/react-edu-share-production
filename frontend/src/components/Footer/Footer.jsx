@@ -1,10 +1,4 @@
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import {
-    FaGraduationCap, FaFacebook, FaInstagram, FaYoutube,
-    FaHeart, FaGithub, FaTelegram, FaEnvelope,
-    FaMapMarkerAlt, FaStar
-} from 'react-icons/fa';
+
 import './Footer.css';
 
 const Footer = () => {

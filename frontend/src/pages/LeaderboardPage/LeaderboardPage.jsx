@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
-import { FaTrophy, FaMedal, FaStar, FaUser, FaCrown, FaChevronUp } from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
-import Footer from '../../components/Footer/Footer';
 import './LeaderboardPage.css';
 
 const LeaderboardPage = () => {

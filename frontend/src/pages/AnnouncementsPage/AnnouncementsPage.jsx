@@ -1,7 +1,5 @@
 import { useState, useEffect, memo } from 'react';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
-import { FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaArrowRight, FaPlus, FaBullhorn, FaTimes, FaClock, FaUserCircle, FaShareAlt, FaTrash } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
 import './AnnouncementsPage.css';
 
 const EventCard = memo(({ event, user, onEventDelete, onSelect }) => (

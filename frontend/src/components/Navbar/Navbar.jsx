@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    FaUser, FaSignOutAlt, FaBookReader, FaChalkboardTeacher, FaBars, FaTimes
-} from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './Navbar.css';
 

@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
-import {
-    FaSearch, FaFilter
-} from 'react-icons/fa';
+import { useSearchParams } from 'react-router-dom';
+
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './CoursesPage.css';
 

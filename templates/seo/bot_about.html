@@ -1,0 +1,25 @@
+{% extends "seo/bot_base.html" %}
+{% block head %}
+<title>Biz Haqimizda — EduShare School | O'zbekistondagi Bepul Ta'lim</title>
+<meta name="description" content="EduShare School — O'zbekistondagi bepul onlayn ta'lim platformasi haqida. Bizning missiyamiz: ta'limni hammaga bepul va ochiq qilish." />
+<link rel="canonical" href="https://edushare.uz/about" />
+{% endblock %}
+{% block content %}
+<h1>EduShare School — Biz Haqimizda</h1>
+<p>EduShare School — O'zbekistondagi bepul onlayn ta'lim platformasi. Bizning missiyamiz: sifatli ta'limni hamma uchun, hamma joyda bepul qilish.</p>
+<h2>Statistika</h2>
+<div class="stats">
+  <div class="stat"><strong>{{ total_lessons }}</strong>Bepul Kurs</div>
+  <div class="stat"><strong>{{ total_users }}</strong>O'quvchi</div>
+  <div class="stat"><strong>{{ total_certificates }}</strong>Sertifikat</div>
+</div>
+<h2>Bizning Yo'nalishlarimiz</h2>
+<ul>
+  <li>Dasturlash: Python, JavaScript, HTML/CSS noldan</li>
+  <li>Matematika va fan kurslari</li>
+  <li>Ingliz tili va chet tillar</li>
+  <li>Sport va sog'lom turmush</li>
+  <li>Musiqa va san'at</li>
+</ul>
+<p><a href="/courses">Barcha bepul kurslarga o'tish →</a></p>
+{% endblock %}
