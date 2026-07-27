@@ -1,5 +1,9 @@
 import { useState, useEffect, memo } from 'react';
+import { Link } from 'react-router-dom';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
+import { FaRegNewspaper, FaRegEye, FaRegClock, FaChevronRight, FaPlus, FaPenNib, FaTrash } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import './ArticlesPage.css';
 

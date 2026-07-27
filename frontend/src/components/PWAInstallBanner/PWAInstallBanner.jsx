@@ -4,14 +4,12 @@ import './PWAInstallBanner.css';
 const PWAInstallBanner = () => {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showBanner, setShowBanner] = useState(false);
+    const [isIOS, setIsIOS] = useState(false);
     const [isInstalled, setIsInstalled] = useState(false);
-    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone);
 
     useEffect(() => {
         // Check if already installed (standalone mode)
-        if (isStandalone) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             setIsInstalled(true);
             return;
         }
@@ -20,7 +18,11 @@ const PWAInstallBanner = () => {
         const dismissed = sessionStorage.getItem('pwa-banner-dismissed');
         if (dismissed) return;
 
-        if (isIOS) {
+        // Detect iOS
+        const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        setIsIOS(isIOSDevice);
+
+        if (isIOSDevice) {
             // iOS doesn't support beforeinstallprompt - show manual guide after delay
             const timer = setTimeout(() => setShowBanner(true), 3000);
             return () => clearTimeout(timer);
@@ -42,7 +44,7 @@ const PWAInstallBanner = () => {
         });
 
         return () => window.removeEventListener('beforeinstallprompt', handler);
-    }, [isStandalone, isIOS]);
+    }, []);
 
     const handleInstall = async () => {
         if (!deferredPrompt) return;

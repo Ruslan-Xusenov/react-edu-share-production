@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { FaAtom } from 'react-icons/fa';
 import './SplashScreen.css';
 
 const SplashScreen = ({ onComplete }) => {
@@ -9,11 +10,11 @@ const SplashScreen = ({ onComplete }) => {
     const particles = useMemo(() => {
         return Array.from({ length: 15 }, (_, i) => ({
             id: i,
-            left: `${(i * 7) % 100}%`,
-            size: `${1 + (i % 3)}px`,
-            duration: `${2 + (i % 2)}s`,
-            delay: `${(i % 5) * 0.2}s`,
-            opacity: 0.3 + (i % 7) * 0.1,
+            left: `${Math.random() * 100}%`,
+            size: `${1 + Math.random() * 3}px`,
+            duration: `${2 + Math.random() * 2}s`,
+            delay: `${Math.random() * 1}s`,
+            opacity: 0.3 + Math.random() * 0.7,
         }));
     }, []);
 

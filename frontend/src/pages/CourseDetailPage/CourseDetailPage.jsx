@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    FaStar, FaClock, FaTrophy, FaHeart, FaShare, FaArrowRight,
+    FaCheckCircle, FaLock, FaYoutube, FaQuestionCircle,
+    FaThumbsUp, FaThumbsDown, FaReply, FaAward
+} from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
+import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
+import YouTubePlayer from '../../components/YouTubePlayer/YouTubePlayer';
+import LessonQuiz from '../../components/LessonQuiz/LessonQuiz';
 import './CourseDetailPage.css';
 
 const extractYouTubeVideoId = (url) => {
@@ -388,7 +397,7 @@ const CourseDetailPage = () => {
                 </div>
             </div>
         );
-    }, [course, handleVideoProgress, isAuthenticated]);
+    }, [course?.id, course?.video_url, course?.video_file_url, course?.thumbnail_url, handleVideoProgress, isAuthenticated]);
 
     if (loading) {
         return <div className="loading">Kurs ma'lumotlari yuklanmoqda...</div>;

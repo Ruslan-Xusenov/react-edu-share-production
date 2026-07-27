@@ -1,5 +1,7 @@
 import { useState, useEffect, memo } from 'react';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
+import { FaBook, FaStar, FaPlus, FaPenNib, FaTrash } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 import './BookReviewsPage.css';
 
 const ReviewCard = memo(({ review, user, onReviewDelete }) => (

@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import {
+    FaUser, FaEnvelope, FaTrophy, FaCertificate,
+    FaHeart, FaEdit, FaCamera, FaGithub, FaGlobe, FaTwitter, FaBookOpen,
+    FaLock, FaShieldAlt, FaCheckCircle, FaKey, FaPaperPlane, FaRedo
+} from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './ProfilePage.css';
 

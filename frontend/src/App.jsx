@@ -1,7 +1,12 @@
-import { useEffect, useState, useCallback, useMemo, lazy } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
+import Navbar from './components/Navbar/Navbar';
+import PWAInstallBanner from './components/PWAInstallBanner/PWAInstallBanner';
 import apiClient, { API_ENDPOINTS } from './config/api';
+import SplashScreen from './components/SplashScreen/SplashScreen';
 const AIChatBot = lazy(() => import('./components/AIChatBot/AIChatBot'));
+import { AnimatePresence, motion } from 'framer-motion';
 import './App.css';
 
 // ⚡ Lazy-loaded pages — code-splitting for better performance

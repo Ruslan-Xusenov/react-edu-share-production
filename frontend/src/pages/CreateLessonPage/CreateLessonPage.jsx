@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import {
+    FaPlusCircle, FaHeading, FaAlignLeft,
+    FaClock, FaLink, FaUpload, FaImage, FaCheck, FaSpinner,
+    FaQuestionCircle, FaTrash, FaCheckCircle
+} from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
+import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import './CreateLessonPage.css';
 

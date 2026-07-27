@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-
+import {
+    FaPlay, FaPause, FaVolumeUp, FaVolumeMute,
+    FaExpand, FaCompress
+} from 'react-icons/fa';
+import { MdPictureInPictureAlt, MdHd, MdSettings } from 'react-icons/md';
 import './VideoPlayer.css';
 
 const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime = 0 }) => {

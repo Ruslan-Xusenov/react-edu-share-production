@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import {
+    FaRegClock, FaRegEye, FaArrowLeft, FaUserCircle, FaRegNewspaper
+} from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './ArticleDetailPage.css';
 

@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import { FaCode, FaCalculator, FaFlask, FaLanguage } from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
+import Footer from '../../components/Footer/Footer';
 import './HomePage.css';
 
 const HomePage = () => {

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaQuestionCircle, FaCheckCircle, FaTimesCircle, FaArrowRight, FaTrophy, FaRedo, FaSpinner, FaCertificate } from 'react-icons/fa';
 import apiClient, { API_ENDPOINTS } from '../../config/api';
 import './LessonQuiz.css';
 
