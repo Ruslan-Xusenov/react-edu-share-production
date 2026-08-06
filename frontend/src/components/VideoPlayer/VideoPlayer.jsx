@@ -58,12 +58,6 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
                 return;
             }
 
-            // Safari - native HLS support
-            if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = hlsSrc;
-                return;
-            }
-
             // Load HLS.js dynamically if needed
             let HlsLib = window.Hls;
             if (!HlsLib) {
@@ -121,6 +115,10 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
                         setIsLoading(false);
                     }
                 });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Safari - native HLS support fallback (e.g., iPhone)
+                video.src = hlsSrc;
+                setCurrentLevel(-2); // -2 indicates native HLS where we can't change quality manually
             } else if (src) {
                 video.src = src;
             }
@@ -313,6 +311,7 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
     };
 
     const currentQualityLabel = () => {
+        if (currentLevel === -2) return 'Auto (Apple)';
         if (currentLevel === -1) return 'Auto';
         const lv = levels.find(l => l.index === currentLevel);
         return lv ? lv.name : 'Auto';
@@ -439,6 +438,13 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
                                     {activeSettingsTab === 'quality' && (
                                         <div className="settings-options">
                                             {isHls ? (
+                                                currentLevel === -2 ? (
+                                                    <div className="settings-info">
+                                                        <span>Avto</span>
+                                                        <br />
+                                                        <small style={{ opacity: 0.7, marginTop: '8px', display: 'block' }}>Sizning qurilmangizda (Apple) video sifatini brauzer o'zi avtomatik tanlaydi.</small>
+                                                    </div>
+                                                ) : (
                                                 <>
                                                     <button
                                                         className={`settings-option ${currentLevel === -1 ? 'active' : ''}`}
@@ -461,6 +467,7 @@ const VideoPlayer = ({ src, hlsSrc, hlsStatus, poster, onProgress, initialTime =
                                                         </button>
                                                     ))}
                                                 </>
+                                                )
                                             ) : (
                                                 <div className="settings-info">
                                                     {hlsStatus === 'processing'
