@@ -128,7 +128,7 @@ def convert_to_hls(lesson_id, input_video_path):
             'ffmpeg', '-y',
             '-i', str(input_path),
             '-c:v', 'libx264',
-            '-preset', 'medium',
+            '-preset', 'veryfast',
             '-profile:v', 'main',
             '-crf', '21',
             '-b:v', profile['video_bitrate'],
