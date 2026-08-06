@@ -119,7 +119,7 @@ def convert_to_hls(lesson_id, input_video_path):
     for profile in applicable_profiles:
         name = profile['name']
         profile_dir = hls_base_dir / name
-        profile_dir.mkdir(exist_ok=True)
+        profile_dir.mkdir(parents=True, exist_ok=True)
         playlist_path = profile_dir / 'playlist.m3u8'
 
         logger.info(f"Konvertatsiya boshlandi: {name}")
@@ -189,7 +189,16 @@ def convert_to_hls(lesson_id, input_video_path):
         hls_relative = f'hls/{lesson_id}/master.m3u8'
         lesson.hls_playlist = hls_relative
         lesson.hls_status = 'ready' if success else 'error'
-        lesson.save(update_fields=['hls_playlist', 'hls_status'])
+        
+        if success:
+            try:
+                if os.path.exists(input_video_path):
+                    os.remove(input_video_path)
+                lesson.video_file = None
+            except Exception as e:
+                logger.error(f"Eski videoni o'chirishda xatolik: {e}")
+                
+        lesson.save(update_fields=['hls_playlist', 'hls_status', 'video_file'])
         logger.info(f"✅ Lesson {lesson_id} HLS yangilandi")
     except Exception as e:
         logger.error(f"Lesson yangilash xatosi: {e}")

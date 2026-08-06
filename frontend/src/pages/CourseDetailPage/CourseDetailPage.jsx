@@ -336,7 +336,7 @@ const CourseDetailPage = () => {
         }
 
         const youtubeVideoId = extractYouTubeVideoId(course.video_url);
-        const hasVideoFile = course.video_file_url && course.video_file_url.trim() !== '';
+        const hasVideoFile = (course.video_file_url && course.video_file_url.trim() !== '') || (course.hls_url && course.hls_url.trim() !== '');
         const hasGenericLink = course.video_url && course.video_url.trim() !== '' && !youtubeVideoId;
 
         // CRITICAL: We pass handleVideoProgress which is stable due to useCallback [id].
@@ -356,7 +356,7 @@ const CourseDetailPage = () => {
             return (
                 <VideoPlayer
                     key={`file-${course.id}`}
-                    src={course.video_file_url}
+                    src={course.video_file_url || ''}
                     hlsSrc={course.hls_url}
                     hlsStatus={course.hls_status}
                     poster={course.thumbnail_url}
